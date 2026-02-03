@@ -41,7 +41,14 @@ Please contact the customer if needed.`
   const tgLink = `https://t.me/share/url?url=&text=${tgMessage}`;
 
   // WhatsApp message
- const waMessage = encodeURIComponent(
+const rawPhone = details.phone.replace(/\D/g, '');
+
+// Ensure India country code
+const phoneWithCountryCode = rawPhone.startsWith('91')
+  ? rawPhone
+  : `91${rawPhone}`;
+
+const waMessage = encodeURIComponent(
 `👋 Hi / வணக்கம்!
 
 🚖 *Trusty Yellow Cabs* — Your Ride Partner
@@ -57,10 +64,11 @@ Next time — book in just one tap 👍
 🛡️ Safe • On-time • Easy Booking
 
 Whenever you need a ride,
-we are just one tap away `
+we are just one tap away`
 );
 
-  const waLink = `https://wa.me/${details.phone.replace(/\D/g, '')}?text=${waMessage}`;
+const waLink = `https://wa.me/${phoneWithCountryCode}?text=${waMessage}`;
+
 
   const emailContent = {
     sender: { name: "Trustyyellowcabs Booking", email: "trustyyellowcabs@gmail.com" },
