@@ -25,7 +25,7 @@ export const Contact: React.FC = () => {
               <div>
                 <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-8">Customer Support</h3>
                 <div className="space-y-8">
-                  <a href="tel:+918870088020" className="flex items-start gap-6 group">
+                  <a href="tel:+919488834020" className="flex items-start gap-6 group">
                    <div className="bg-[#FF6467]/20 dark:bg-[#FF6467]/30 p-4 rounded-2xl text-[#FF6467] group-hover:bg-[#FF6467] group-hover:text-white transition-all duration-300">
   <Phone size={24} />
 </div>
@@ -37,7 +37,7 @@ export const Contact: React.FC = () => {
 
                     </div>
                   </a>
-                  <a href="mailto:trustyyellowcabs@gmail.com" className="flex items-start gap-6 group">
+                  <a href="mailto:fastpointcab@gmail.com" className="flex items-start gap-6 group">
   <div className="bg-[#FF6467]/20 dark:bg-[#FF6467]/30 p-4 rounded-2xl text-[#FF6467] group-hover:bg-[#FF6467] group-hover:text-white transition-all duration-300">
     <Mail size={24} />
   </div>

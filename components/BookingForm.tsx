@@ -250,20 +250,28 @@ setFormData(prev => ({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const success = await sendBookingEmail(formData);
-      if (success) setSubmitted(true);
-      else alert("Booking failed. Please try again.");
-    } catch (err) {
-      console.error(err);
-      alert("Error sending booking. Check console.");
-    } finally {
-      setLoading(false);
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+  try {
+    const success = await sendBookingEmail(formData);
+    if (success) {
+      setSubmitted(true);
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      alert("Booking failed. Please try again.");
     }
-  };
+  } catch (err) {
+    console.error(err);
+    alert("Error sending booking. Check console.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  
 
  const handleWhatsAppConfirm = () => {
   const message = `*NEW BOOKING CONFIRMATION*%0A*Name:* ${formData.name}%0A*Phone:* ${formData.phone}%0A*Pickup:* ${formData.pickup}%0A*Drop:* ${formData.drop}%0A*Fare:* ${formData.estimatedFare}`;

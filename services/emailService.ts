@@ -51,11 +51,11 @@ const phoneWithCountryCode = rawPhone.startsWith('91')
 const waMessage = encodeURIComponent(
 `👋 Hi / வணக்கம்!
 
-🚖 *Trusty Yellow Cabs* — Your Ride Partner
+🚖 *FastPointCab* — Your Ride Partner
 
 📍 Need a taxi anytime?
 Just open:
-👉 https://trustyyellowcabs.in
+👉 https://www.fastpointcab.in/
 
 📲 Easy to book:
 Add this website to your Home Screen.
@@ -71,8 +71,8 @@ const waLink = `https://wa.me/${phoneWithCountryCode}?text=${waMessage}`;
 
 
   const emailContent = {
-    sender: { name: "Trustyyellowcabs Booking", email: "trustyyellowcabs@gmail.com" },
-    to: [{ email: "trustyyellowcabs@gmail.com", name: "Trustyyellowcabs Admin" }],
+    sender: { name: "FastPointCab Booking", email: "fastpointcab@gmail.com" },
+    to: [{ email: "fastpointcab@gmail.com", name: "FastPointCab Admin" }],
     subject: `Booking Request: ${details.pickup} [ Fare: ${details.estimatedFare || 'N/A'} ]`,
     htmlContent: `
       <div style="font-family: sans-serif; color: #1e293b; max-width: 600px; margin: 0 auto; border: 1px solid #f1f5f9; border-radius: 12px; overflow: hidden;">
