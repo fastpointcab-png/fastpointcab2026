@@ -8,7 +8,7 @@ declare const google: any;
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 const PRICING: Record<VehicleType, number> = {
-  [VehicleType.MINI]: 25,
+  [VehicleType.MINI]: 24,
   [VehicleType.SEDAN]: 27,
   [VehicleType.SUV]: 40,
   [VehicleType.SUV_PLUS]: 45,
@@ -113,7 +113,7 @@ export const BookingForm: React.FC = () => {
       directionsService.current = new google.maps.DirectionsService();
       directionsRenderer.current = new google.maps.DirectionsRenderer({
         map: mapInstance.current,
-        polylineOptions: { strokeColor: "#FDB813", strokeWeight: 6, strokeOpacity: 0.95 },
+        polylineOptions: { strokeColor: "#FF6467", strokeWeight: 6, strokeOpacity: 0.95 },
         suppressMarkers: false
       });
 
@@ -267,7 +267,7 @@ setFormData(prev => ({
 
  const handleWhatsAppConfirm = () => {
   const message = `*NEW BOOKING CONFIRMATION*%0A*Name:* ${formData.name}%0A*Phone:* ${formData.phone}%0A*Pickup:* ${formData.pickup}%0A*Drop:* ${formData.drop}%0A*Fare:* ${formData.estimatedFare}`;
-  window.open(`https://wa.me/918870088020?text=${message}`, '_blank');
+  window.open(`https://wa.me/919488834020?text=${message}`, '_blank');
 };
 
 if (submitted) {
@@ -357,13 +357,14 @@ if (submitted) {
 <button 
   type="button" 
   onClick={handleNextStep} 
-  className="w-full bg-gradient-to-r from-slate-900 to-gray-700 dark:from-white dark:to-slate-300 
-             text-white dark:text-slate-950 font-extrabold py-3 px-4 rounded-2xl 
+  className="w-full bg-gradient-to-r from-red-400 to-red-300 dark:from-red-200 dark:to-red-100
+             text-white dark:text-red-900 font-extrabold py-3 px-4 rounded-2xl 
              flex items-center justify-center gap-3 shadow-xl text-base uppercase tracking-wide 
              active:scale-95 transform transition-all duration-200"
 >
   Continue <ArrowRight size={28} />
 </button>
+
 
 
 
@@ -423,9 +424,22 @@ if (submitted) {
             <button type="button" onClick={() => setStep(1)} className="p-4 bg-slate-50 dark:bg-slate-800 text-slate-400 rounded-xl border border-slate-100 dark:border-slate-700 active:scale-95 transition-all">
               <ArrowLeft size={20} />
             </button>
-            <button type="submit" disabled={loading} className="flex-1 bg-brand-yellow text-slate-950 font-black py-4.5 rounded-2xl shadow-xl shadow-brand-yellow/20 uppercase tracking-widest text-[10px] active:scale-95 transition-all">
-              {loading ? 'Processing...' : 'Confirm Booking'}
-            </button>
+            <button
+  type="submit"
+  disabled={loading}
+  className="flex-1 
+             bg-gradient-to-r from-red-400 to-red-300 
+             dark:from-red-200 dark:to-red-100
+             text-white dark:text-red-900 
+             font-black py-4.5 rounded-2xl 
+             shadow-xl shadow-red-400/20 
+             uppercase tracking-widest text-[10px] 
+             active:scale-95 transform transition-all duration-200
+             disabled:opacity-50 disabled:cursor-not-allowed"
+>
+  {loading ? 'Processing...' : 'Confirm Booking'}
+</button>
+
             
           </div>
         </div>

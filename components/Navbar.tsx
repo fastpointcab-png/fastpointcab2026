@@ -30,10 +30,10 @@ export const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
           
           <Link to="/" className="flex items-center group gap-0.5">
              <span className="text-xl font-extrabold tracking-tighter text-slate-900 dark:text-white transition-colors">
-               Trusty
+              Book  
              </span>
              <span className="text-xl font-extrabold tracking-tighter text-brand-yellow transition-colors">
-               YellowCabs
+              -Your Taxi
              </span>
           </Link>
 

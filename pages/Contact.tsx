@@ -5,7 +5,7 @@ export const Contact: React.FC = () => {
   const handleWhatsAppClick = () => {
     // General inquiry message for WhatsApp
     const text = `Hi Trustyyellowcabs, I have an inquiry about your taxi services in Coimbatore.`;
-    const phoneNumber = '918870088020';
+    const phoneNumber = '919488834020';
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(text)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -14,8 +14,8 @@ export const Contact: React.FC = () => {
     <div className="min-h-screen bg-white dark:bg-slate-950 py-20">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">Get in Touch</h1>
-          <p className="text-lg text-slate-600 dark:text-slate-400">Contact Trusty Yellow Cabs 24/7 for safe and reliable cab service in Coimbatore.</p>
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">Online taxi booking support</h1>
+          <p className="text-lg text-slate-600 dark:text-slate-400">Book a safe and comfortable ride in Coimbatore anytime — 24/7 support and hassle-free Kovai red taxi booking available.</p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
@@ -23,36 +23,39 @@ export const Contact: React.FC = () => {
           <div className="space-y-8">
             <div className="bg-slate-50 dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 h-full flex flex-col justify-between">
               <div>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-8">Contact Information</h3>
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-8">Customer Support</h3>
                 <div className="space-y-8">
                   <a href="tel:+918870088020" className="flex items-start gap-6 group">
-                    <div className="bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-2xl text-yellow-600 group-hover:bg-yellow-600 group-hover:text-white transition-all duration-300">
-                      <Phone size={24} />
-                    </div>
+                   <div className="bg-[#FF6467]/20 dark:bg-[#FF6467]/30 p-4 rounded-2xl text-[#FF6467] group-hover:bg-[#FF6467] group-hover:text-white transition-all duration-300">
+  <Phone size={24} />
+</div>
+
                     <div>
-                      <p className="font-semibold text-slate-900 dark:text-white text-lg">Phone</p>
-                      <p className="text-slate-600 dark:text-slate-400 group-hover:text-yellow-600 transition-colors font-medium">+91 88700 88020</p>
+                      <p className="font-semibold text-slate-900 dark:text-white text-lg group-hover:text-[#FF6467] transition-colors">Phone</p>
+
+                      <p className="text-slate-600 dark:text-slate-400 group-hover:text-[#FF6467] transition-colors font-medium">+91 94888 34020</p>
+
                     </div>
                   </a>
                   <a href="mailto:trustyyellowcabs@gmail.com" className="flex items-start gap-6 group">
-                    <div className="bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-2xl text-yellow-600 group-hover:bg-yellow-600 group-hover:text-white transition-all duration-300">
-                      <Mail size={24} />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-slate-900 dark:text-white text-lg">Email</p>
-                      <p className="text-slate-600 dark:text-slate-400 group-hover:text-yellow-600 transition-colors font-medium">trustyyellowcabs@gmail.com</p>
-                    </div>
-                  </a>
-                  <div className="flex items-start gap-6">
-                    <div className="bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-2xl text-yellow-600">
-                      <MapPin size={24} />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-slate-900 dark:text-white text-lg">Address</p>
-                      <p className="text-slate-600 dark:text-slate-400">
-                        Trustyyellowcabs Taxi services<br />
-                        Coimbatore, Tamil Nadu, 641007
-                      </p>
+  <div className="bg-[#FF6467]/20 dark:bg-[#FF6467]/30 p-4 rounded-2xl text-[#FF6467] group-hover:bg-[#FF6467] group-hover:text-white transition-all duration-300">
+    <Mail size={24} />
+  </div>
+  <div>
+    <p className="font-semibold text-slate-900 dark:text-white text-lg group-hover:text-[#FF6467] transition-colors">Email</p>
+    <p className="text-slate-600 dark:text-slate-400 group-hover:text-[#FF6467] transition-colors font-medium">fastpointcab@gmail.com</p>
+  </div>
+</a>
+ <div className="flex items-start gap-6 group">
+  <div className="bg-[#FF6467]/20 dark:bg-[#FF6467]/30 p-4 rounded-2xl text-[#FF6467] group-hover:bg-[#FF6467] group-hover:text-white transition-all duration-300">
+    <MapPin size={24} />
+  </div>
+  <div>
+    <p className="font-semibold text-slate-900 dark:text-white text-lg group-hover:text-[#FF6467] transition-colors">Address</p>
+    <p className="text-slate-600 dark:text-slate-400 group-hover:text-[#FF6467] transition-colors">
+     Fastpoint Cab-Taxi services<br />
+      Coimbatore, Tamil Nadu 641014
+    </p>
                     </div>
                   </div>
                 </div>
@@ -76,15 +79,18 @@ export const Contact: React.FC = () => {
           </div>
 
           {/* Quick Connect / WhatsApp */}
-          <div className="flex flex-col justify-center bg-white dark:bg-slate-900 p-8 md:p-12 rounded-3xl border-2 border-dashed border-yellow-200 dark:border-yellow-800/50 text-center shadow-xl shadow-slate-200/50 dark:shadow-none">
-            <div className="w-24 h-24 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center text-green-600 mx-auto mb-8 animate-pulse-slow">
-               <MessageCircle size={48} />
-            </div>
-            <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Direct WhatsApp Booking</h3>
-            <p className="text-lg text-slate-600 dark:text-slate-400 mb-10 leading-relaxed max-w-md mx-auto">
-            Reach us anytime for Coimbatore taxi bookings, outstation trips, and corporate travel.
-            </p>
-            
+          <div className="flex flex-col justify-center bg-white dark:bg-slate-900 p-8 md:p-12 rounded-3xl border-2 border-dashed border-[#FF6467]/30 dark:border-[#FF6467]/50 text-center shadow-xl shadow-[#FF6467]/25 dark:shadow-none">
+  <div className="w-24 h-24 bg-[#FF6467]/20 dark:bg-[#FF6467]/30 rounded-full flex items-center justify-center text-[#FF6467] mx-auto mb-8 animate-pulse-slow">
+    <MessageCircle size={48} />
+  </div>
+
+  <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4 group-hover:text-[#FF6467] transition-colors">
+    Direct WhatsApp Booking
+  </h3>
+
+  <p className="text-lg text-slate-600 dark:text-slate-400 mb-10 leading-relaxed max-w-md mx-auto group-hover:text-[#FF6467] transition-colors">
+   Reach out 24/7 for Instant taxi , including Outstation Cab Booking and business travel in Covai.
+  </p>
             <div className="space-y-4">
               <button 
                 onClick={handleWhatsAppClick}
@@ -95,7 +101,7 @@ export const Contact: React.FC = () => {
               </button>
               
               <a 
-                href="tel:+918870088020"
+                href="tel:+919488834020"
                 className="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold py-5 rounded-full flex items-center justify-center gap-3 transition-all text-xl"
               >
                 <Phone size={24} />

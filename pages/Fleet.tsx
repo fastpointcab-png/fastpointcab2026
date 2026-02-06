@@ -10,7 +10,7 @@ export const Fleet: React.FC = () => {
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-6 uppercase tracking-tight">Our Fleet</h1>
           <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-medium">
-           Book your Coimbatore taxi or outstation taxi from our wide range of vehicles, from budget sedans to premium coaches.
+           Planning a city ride or an outstation trip? Choose your vehicle and book online for a smooth and reliable journey.
           </p>
         </div>
 
@@ -49,13 +49,20 @@ export const Fleet: React.FC = () => {
                   ))}
                 </div>
 
-                <Link 
-                  to="/" 
-                  state={{ scrollToBook: true }}
-                  className="block w-full text-center bg-brand-yellow text-slate-950 font-bold py-4 rounded-lg hover:bg-yellow-400 transition-all shadow-md active:scale-95 uppercase tracking-widest text-[11px]"
-                >
-                  Book This Vehicle
-                </Link>
+<Link 
+  to="/" 
+  state={{ scrollToBook: true }}
+  className="block w-full text-center bg-[#FF6467] text-white font-bold py-4 rounded-xl
+             shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-pink-500/50
+             active:scale-95 uppercase tracking-widest text-[11px] relative overflow-hidden
+             animate-glow-flow"
+>
+  {/* Optional shimmer effect */}
+  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent 
+                  -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000 pointer-events-none"></div>
+  Book This Vehicle
+</Link>
+
               </div>
             </div>
           ))}

@@ -8,9 +8,9 @@ export const Services: React.FC = () => {
     <div className="min-h-screen bg-white dark:bg-slate-950 py-20">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-20">
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">Your Trusted Taxi Partner in Coimbatore</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">Your Go-To Cab Service in Kovai</h1>
           <p className="text-lg text-slate-600 dark:text-slate-400">
-           Coimbatore offers reliable cab services for safe city travel, easy airport transfers, and comfortable outstation trips.
+         Safe and reliable cab services in Coimbatore, offering city rides, airport transfers, and outstation trips with online booking.
           </p>
         </div>
 

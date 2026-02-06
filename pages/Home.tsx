@@ -63,16 +63,17 @@ export const Home: React.FC = () => {
             <div className="flex flex-col space-y-10 text-center lg:text-left order-2 lg:order-1">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-lg w-fit mx-auto lg:mx-0 shadow-sm">
                 <span className="flex h-1.5 w-1.5 rounded-full bg-brand-yellow"></span>
-                <span className="text-slate-600 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest">Trustyyellowcabs</span>
+                <span className="text-slate-600 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest">FastPointCab</span>
               </div>
 
               <div className="space-y-6">
                 <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white leading-[1.1] tracking-tight">
-                  Fast rides, <br />
-                  <span className="text-brand-yellow">Better service.</span>
+                 Coimbatore <br />
+                  <span className="text-brand-yellow">Taxi Service</span>
                 </h1>
                 <p className="text-lg text-slate-500 dark:text-slate-400 max-w-lg leading-relaxed font-medium">
-                  Reliable taxi service in Coimbatore. Safe, clean, and always on time.
+                 Local ride ah? Outstation ah?
+FastPoint Cab dhaan — Anytime, Anywhere!
                 </p>
               </div>
 
@@ -99,7 +100,7 @@ export const Home: React.FC = () => {
       <section className="py-24 bg-slate-50 dark:bg-slate-900/40">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16 space-y-4">
-            <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight uppercase">Services</h2>
+            <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight uppercase">Cab Services</h2>
             <div className="w-12 h-1 bg-brand-yellow mx-auto rounded-full"></div>
           </div>
 
@@ -120,39 +121,47 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-24 bg-white dark:bg-slate-950 overflow-hidden relative border-t border-slate-50 dark:border-slate-900">
-        <div className="container mx-auto px-4 mb-16 relative z-10 text-center">
-          <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight uppercase">Feedback</h2>
-          <p className="mt-4 text-slate-400 font-bold tracking-widest uppercase text-[10px]">Trusted Community</p>
-        </div>
+   {/* Testimonials */}
+<section className="py-24 bg-white dark:bg-slate-950 overflow-hidden relative border-t border-slate-50 dark:border-slate-900">
+  <div className="container mx-auto px-4 mb-16 relative z-10 text-center">
+    <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight uppercase">
+      Feedback
+    </h2>
+    <p className="mt-4 text-slate-400 font-bold tracking-widest uppercase text-[10px]">
+      Trusted Community
+    </p>
+  </div>
 
-        <div className="container mx-auto px-4 h-[550px] overflow-hidden relative">
-          <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white dark:from-slate-950 to-transparent z-20 pointer-events-none"></div>
-          <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white dark:from-slate-950 to-transparent z-20 pointer-events-none"></div>
+  <div className="container mx-auto px-4 h-[550px] overflow-hidden relative">
+    <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white dark:from-slate-950 to-transparent z-20 pointer-events-none"></div>
+    <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white dark:from-slate-950 to-transparent z-20 pointer-events-none"></div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
-            <div className="flex flex-col animate-vertical-scroll">
-              {[...col1, ...col1].map((t, i) => <TestimonialCard key={`c1-${i}`} t={t} />)}
-            </div>
-            <div className="hidden md:flex flex-col animate-vertical-scroll-reverse">
-              {[...col2, ...col2].map((t, i) => <TestimonialCard key={`c2-${i}`} t={t} />)}
-            </div>
-            <div className="hidden lg:flex flex-col animate-vertical-scroll">
-              {[...col3, ...col3].map((t, i) => <TestimonialCard key={`c3-${i}`} t={t} />)}
-            </div>
-          </div>
-        </div>
-        
-        <div className="mt-16 text-center">
-           <button 
-             onClick={scrollToBooking}
-             className="px-12 py-5 bg-brand-yellow text-slate-900 font-bold rounded-lg transition-all shadow-lg hover:scale-105 active:scale-95 uppercase tracking-widest text-xs"
-           >
-             Book Your Trip
-           </button>
-        </div>
-      </section>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
+      <div className="flex flex-col animate-vertical-scroll">
+        {[...col1, ...col1].map((t, i) => <TestimonialCard key={`c1-${i}`} t={t} />)}
+      </div>
+      <div className="hidden md:flex flex-col animate-vertical-scroll-reverse">
+        {[...col2, ...col2].map((t, i) => <TestimonialCard key={`c2-${i}`} t={t} />)}
+      </div>
+      <div className="hidden lg:flex flex-col animate-vertical-scroll">
+        {[...col3, ...col3].map((t, i) => <TestimonialCard key={`c3-${i}`} t={t} />)}
+      </div>
+    </div>
+  </div>
+
+  <div className="mt-16 text-center">
+    <button
+      onClick={scrollToBooking}
+      className="px-12 py-5 bg-[#FF6467] text-white font-bold rounded-xl transition-all shadow-lg hover:scale-105 active:scale-95 uppercase tracking-widest text-xs relative overflow-hidden animate-glow-flow"
+    >
+      {/* Optional animated shimmer effect */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000 pointer-events-none"></div>
+
+      Book Your Trip
+    </button>
+  </div>
+</section>
+
     </div>
   );
 };

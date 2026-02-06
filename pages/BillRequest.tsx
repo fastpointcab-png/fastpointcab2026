@@ -85,7 +85,7 @@ export const BillRequest: React.FC = () => {
 --------------------------------
 Please generate a bill for the above trip.`;
 
-    const phoneNumber = '918870088020';
+    const phoneNumber = '919488834020';
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(messageText)}`;
     window.open(whatsappUrl, '_blank');
   };

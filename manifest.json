@@ -1,14 +1,14 @@
 {
-  "name": "Trustyyellowcabs",
-  "short_name": "Trustyyellowcabs",
+  "name": "FastPointCab",
+  "short_name": "FastPointCab",
   "description": "Taxi Coimbatore. Airport transfers, outstation, and city Cabs.",
   "lang": "en-US",
   "start_url": "/",
   "scope": ".",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F8FAFC",
-  "theme_color": "#FDB813",
+  "background_color": "#FF6467",
+  "theme_color": "#FF6467",
   "icons": [
     {
       "src": "/images/taxi-icon-192.png",

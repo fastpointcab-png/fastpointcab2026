@@ -12,10 +12,10 @@ export const Footer: React.FC = () => {
           
           <Link to="/" className="flex items-center gap-1 group">
              <span className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white group-hover:text-yellow-500 transition-colors">
-               Trusty
+               Plan Your
              </span>
              <span className="text-xl font-extrabold tracking-tight text-yellow-500 transition-colors">
-               YellowCabs
+               Cab Booking
              </span>
           </Link>
 
@@ -37,16 +37,16 @@ export const Footer: React.FC = () => {
         <div className="mt-8 mb-6 h-px w-full bg-slate-100 dark:bg-slate-800" />
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500 dark:text-slate-500">
-          <p>&copy; {new Date().getFullYear()} Trustyyellowcabs. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} FastPointCab. All rights reserved.</p>
           <div className="flex items-center gap-1">
              <span>Partner:</span>
              <a 
-               href="https://www.fastpointcab.in/" 
+               href="https://www.trustyyellowcabs.in/" 
                target="_blank" 
                rel="noopener noreferrer"
                className="hover:text-yellow-600 dark:hover:text-yellow-400 transition-colors font-medium flex items-center gap-1"
              >
-               www.fastpointcab.in
+               www.trustyyellowcabs.in
              </a>
           </div>
         </div>
