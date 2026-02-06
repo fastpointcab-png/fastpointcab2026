@@ -73,7 +73,7 @@ export const BillRequest: React.FC = () => {
   const handleWhatsAppSend = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const messageText = `*BILL REQUEST - Trustyyellowcabs*
+    const messageText = `*BILL REQUEST - FastPointCab*
 --------------------------------
 *Customer:* ${formData.name}
 *Phone:* ${formData.phone}
