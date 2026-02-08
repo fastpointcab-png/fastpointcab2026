@@ -370,7 +370,7 @@ if (submitted) {
              flex items-center justify-center gap-3 shadow-xl text-base uppercase tracking-wide 
              active:scale-95 transform transition-all duration-200"
 >
-  Continue <ArrowRight size={28} />
+  Check Price<ArrowRight size={28} />
 </button>
 
 
