@@ -370,16 +370,10 @@ if (submitted) {
              flex items-center justify-center gap-3 shadow-xl text-base uppercase tracking-wide 
              active:scale-95 transform transition-all duration-200"
 >
-  Check Price<ArrowRight size={28} />
+  Continue Booking<ArrowRight size={28} />
 </button>
-
-
-
-
-
-        </div>
-
-        {/* Step 2 */}
+ </div>
+ {/* Step 2 */}
         <div className={`${step === 2 ? 'space-y-4' : 'hidden'} animate-fade-in`}>
           <div className="relative h-40 rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 shadow-inner">
             <div ref={mapRef} className="w-full h-full" />
