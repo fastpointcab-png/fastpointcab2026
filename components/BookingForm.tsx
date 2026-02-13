@@ -398,30 +398,36 @@ const handleUseCurrentLocation = () => {
     return;
   }
 
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      const { latitude, longitude } = position.coords;
-      const geocoder = new google.maps.Geocoder();
+ navigator.geolocation.getCurrentPosition(
+  (position) => {
+    const { latitude, longitude } = position.coords;
+    const geocoder = new google.maps.Geocoder();
 
-      geocoder.geocode(
-        { location: { lat: latitude, lng: longitude } },
-        (results: any, status: any) => {
-          if (status === "OK" && results[0]) {
-            const address = results[0].formatted_address;
-            setFormData(prev => ({ ...prev, pickup: address }));
-            if (pickupRef.current) pickupRef.current.value = address;
-          } else {
-            console.error("Reverse geocode failed:", status);
-            alert("Unable to find address from location.");
-          }
+    geocoder.geocode(
+      { location: { lat: latitude, lng: longitude } },
+      (results: any, status: any) => {
+        if (status === "OK" && results[0]) {
+          const address = results[0].formatted_address;
+          setFormData(prev => ({ ...prev, pickup: address }));
+          if (pickupRef.current) pickupRef.current.value = address;
+        } else {
+          console.error("Reverse geocode failed:", status);
+          alert("Unable to find address from location.");
         }
-      );
-    },
-    (error) => {
-      console.error("Geolocation error:", error);
-      alert("Unable to get your current location.");
-    }
-  );
+      }
+    );
+  },
+  (error) => {
+    console.error("Geolocation error:", error);
+    alert("Unable to get your current location.");
+  },
+  {
+    enableHighAccuracy: true, // ask for best possible result
+    timeout: 10000,           // wait up to 10s
+    maximumAge: 0             // don’t use cached value
+  }
+);
+
 };
 
   return (
