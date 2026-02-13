@@ -392,43 +392,6 @@ if (submitted) {
   );
 }
 
-const handleUseCurrentLocation = () => {
-  if (!navigator.geolocation) {
-    alert("Geolocation not supported by your browser.");
-    return;
-  }
-
- navigator.geolocation.getCurrentPosition(
-  (position) => {
-    const { latitude, longitude } = position.coords;
-    const geocoder = new google.maps.Geocoder();
-
-    geocoder.geocode(
-      { location: { lat: latitude, lng: longitude } },
-      (results: any, status: any) => {
-        if (status === "OK" && results[0]) {
-          const address = results[0].formatted_address;
-          setFormData(prev => ({ ...prev, pickup: address }));
-          if (pickupRef.current) pickupRef.current.value = address;
-        } else {
-          console.error("Reverse geocode failed:", status);
-          alert("Unable to find address from location.");
-        }
-      }
-    );
-  },
-  (error) => {
-    console.error("Geolocation error:", error);
-    alert("Unable to get your current location.");
-  },
-  {
-    enableHighAccuracy: true, // ask for best possible result
-    timeout: 10000,           // wait up to 10s
-    maximumAge: 0             // don’t use cached value
-  }
-);
-
-};
 
   return (
     <div className="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-slate-800 w-full max-w-sm mx-auto transition-all duration-500 overflow-hidden">
@@ -445,42 +408,32 @@ const handleUseCurrentLocation = () => {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Step 1 */}
         <div className={`${step === 1 ? 'space-y-4' : 'hidden'} animate-fade-in`}>
-<InputWrapper icon={MapPin} label="Pickup">
+         <InputWrapper icon={MapPin} label="Pickup">
   <div className="relative w-full">
-    <input
-      ref={pickupRef}
-      type="text"
-      required
-      placeholder="Enter Pickup Location"
-      defaultValue={formData.pickup}
-      className="w-full pl-11 pr-10 py-3.5 bg-slate-50 dark:bg-slate-950 border border-transparent dark:border-slate-800 focus:border-brand-yellow rounded-xl text-xs font-bold outline-none dark:text-white"
-    />
-
-    {/* 🧭 Use Current Location Button */}
+  <input
+    ref={pickupRef}
+    type="text"
+    required
+    placeholder="Enter Pickup Location"
+    defaultValue={formData.pickup}
+    className="w-full pl-11 pr-10 py-3.5 bg-slate-50 dark:bg-slate-950 border border-transparent dark:border-slate-800 focus:border-brand-yellow rounded-xl text-xs font-bold outline-none dark:text-white"
+  />
+  
+  {formData.pickup && (
     <button
       type="button"
-      onClick={handleUseCurrentLocation}
-      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-yellow text-lg"
-      title="Use my current location"
+      onClick={() => {
+        if (pickupRef.current) pickupRef.current.value = '';
+        setFormData(prev => ({ ...prev, pickup: '' }));
+      }}
+      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500"
     >
-      📍
+      ✕
     </button>
+  )}
+</div>
 
-    {formData.pickup && (
-      <button
-        type="button"
-        onClick={() => {
-          if (pickupRef.current) pickupRef.current.value = '';
-          setFormData(prev => ({ ...prev, pickup: '' }));
-        }}
-        className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500"
-      >
-        ✕
-      </button>
-    )}
-  </div>
 </InputWrapper>
-
 
          <InputWrapper icon={MapPin} label="Destination">
  <div className="relative w-full">
