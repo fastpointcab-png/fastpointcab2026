@@ -94,6 +94,50 @@ export const BookingForm: React.FC = () => {
     script.onload = () => setGoogleLoaded(true);
     document.head.appendChild(script);
   }, []);
+// 🔥 Google Autocomplete Light Theme Injection
+useEffect(() => {
+  const style = document.createElement("style");
+
+  style.innerHTML = `
+    .pac-container {
+      background-color: #ffffff !important;
+      border-radius: 16px !important;
+      border: 1px solid #e5e7eb !important;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
+      padding: 6px 0 !important;
+      z-index: 9999 !important;
+    }
+
+    .pac-item {
+      padding: 10px 16px !important;
+      font-size: 12px !important;
+      font-weight: 700 !important;
+      color: #111827 !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .pac-item:hover {
+      background-color: #f3f4f6 !important;
+    }
+
+    .pac-matched {
+      color: #ef4444 !important; /* red highlight */
+      font-weight: 900 !important;
+    }
+
+    /* Subtle "Powered by Google" */
+    .pac-logo:after {
+      opacity: 0.6 !important;
+    }
+  `;
+
+  document.head.appendChild(style);
+
+  return () => {
+    document.head.removeChild(style);
+  };
+}, []);
+
 
   useEffect(() => {
     if (!googleLoaded || !mapRef.current || mapInstance.current) return;
@@ -117,17 +161,20 @@ export const BookingForm: React.FC = () => {
         suppressMarkers: false
       });
 
-      const COIMBATORE_BOUNDS = new google.maps.LatLngBounds(
-        new google.maps.LatLng(10.60, 76.65),
-        new google.maps.LatLng(11.35, 77.10)
-      );
+      
 
-      const options = {
-        bounds: COIMBATORE_BOUNDS,
-        strictBounds: false,
-        componentRestrictions: { country: 'in' },
-        fields: ['formatted_address', 'geometry'],
-      };
+     const COIMBATORE_BOUNDS = new google.maps.LatLngBounds(
+  new google.maps.LatLng(10.880, 76.870), // Southwest
+  new google.maps.LatLng(11.100, 77.100)  // Northeast
+);
+
+
+    const options = {
+  bounds: COIMBATORE_BOUNDS,
+  strictBounds: false, // Allows outstation results if needed
+  componentRestrictions: { country: 'in' },
+  fields: ['formatted_address', 'geometry', 'name'],
+};
 
       if (pickupRef.current) {
         pickupAutocomplete.current = new google.maps.places.Autocomplete(pickupRef.current, options);
@@ -206,6 +253,8 @@ if (isPremiumSUV && distanceValue <= 5) {
   return;
 }
 
+
+
 // ✅ Normal fare calculation
 const baseFare = isPremiumSUV ? PREMIUM_BASE_FARE : STANDARD_BASE_FARE;
 const perKmRate = PRICING[vehicle];
@@ -249,10 +298,20 @@ setFormData(prev => ({
       alert("Please enter pickup and destination.");
     }
   };
-
- const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
+
+  // 📌 Phone validation
+  const phone = formData.phone.trim();
+  const phoneRegex = /^[6-9]\d{9}$/;
+
+  if (!phoneRegex.test(phone)) {
+    alert("Please enter a valid 10-digit Indian phone number.");
+    return;
+  }
+
   setLoading(true);
+
   try {
     const success = await sendBookingEmail(formData);
     if (success) {
@@ -269,6 +328,7 @@ setFormData(prev => ({
     setLoading(false);
   }
 };
+
 
 
   
@@ -332,6 +392,37 @@ if (submitted) {
   );
 }
 
+const handleUseCurrentLocation = () => {
+  if (!navigator.geolocation) {
+    alert("Geolocation not supported by your browser.");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const { latitude, longitude } = position.coords;
+      const geocoder = new google.maps.Geocoder();
+
+      geocoder.geocode(
+        { location: { lat: latitude, lng: longitude } },
+        (results: any, status: any) => {
+          if (status === "OK" && results[0]) {
+            const address = results[0].formatted_address;
+            setFormData(prev => ({ ...prev, pickup: address }));
+            if (pickupRef.current) pickupRef.current.value = address;
+          } else {
+            console.error("Reverse geocode failed:", status);
+            alert("Unable to find address from location.");
+          }
+        }
+      );
+    },
+    (error) => {
+      console.error("Geolocation error:", error);
+      alert("Unable to get your current location.");
+    }
+  );
+};
 
   return (
     <div className="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-slate-800 w-full max-w-sm mx-auto transition-all duration-500 overflow-hidden">
@@ -348,12 +439,74 @@ if (submitted) {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Step 1 */}
         <div className={`${step === 1 ? 'space-y-4' : 'hidden'} animate-fade-in`}>
-          <InputWrapper icon={MapPin} label="Pickup">
-            <input ref={pickupRef} type="text" required placeholder="Enter Pickup Location" defaultValue={formData.pickup} className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-transparent dark:border-slate-800 focus:border-brand-yellow rounded-xl text-xs font-bold outline-none dark:text-white" />
-          </InputWrapper>
-          <InputWrapper icon={MapPin} label="Destination">
-            <input ref={dropRef} type="text" required placeholder="Enter Destination" defaultValue={formData.drop} className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-transparent dark:border-slate-800 focus:border-brand-yellow rounded-xl text-xs font-bold outline-none dark:text-white" />
-          </InputWrapper>
+<InputWrapper icon={MapPin} label="Pickup">
+  <div className="relative w-full">
+    <input
+      ref={pickupRef}
+      type="text"
+      required
+      placeholder="Enter Pickup Location"
+      defaultValue={formData.pickup}
+      className="w-full pl-11 pr-10 py-3.5 bg-slate-50 dark:bg-slate-950 border border-transparent dark:border-slate-800 focus:border-brand-yellow rounded-xl text-xs font-bold outline-none dark:text-white"
+    />
+
+    {/* 🧭 Use Current Location Button */}
+    <button
+      type="button"
+      onClick={handleUseCurrentLocation}
+      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-yellow text-lg"
+      title="Use my current location"
+    >
+      📍
+    </button>
+
+    {formData.pickup && (
+      <button
+        type="button"
+        onClick={() => {
+          if (pickupRef.current) pickupRef.current.value = '';
+          setFormData(prev => ({ ...prev, pickup: '' }));
+        }}
+        className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500"
+      >
+        ✕
+      </button>
+    )}
+  </div>
+</InputWrapper>
+
+
+         <InputWrapper icon={MapPin} label="Destination">
+ <div className="relative w-full">
+  <input
+    ref={dropRef}
+    type="text"
+    required
+    placeholder="Enter Destination"
+    defaultValue={formData.drop}
+    className="w-full pl-11 pr-10 py-3.5 bg-slate-50 dark:bg-slate-950 
+               border border-transparent dark:border-slate-800 
+               focus:border-brand-yellow rounded-xl 
+               text-xs font-bold outline-none dark:text-white"
+  />
+
+  {formData.drop && (
+    <button
+      type="button"
+      onClick={() => {
+        if (dropRef.current) dropRef.current.value = '';
+        setFormData(prev => ({ ...prev, drop: '' }));
+      }}
+      className="absolute right-3 top-1/2 -translate-y-1/2 
+                 text-slate-400 hover:text-red-500"
+    >
+      ✕
+    </button>
+  )}
+</div>
+
+</InputWrapper>
+
           <div className="grid grid-cols-2 gap-4">
             <InputWrapper icon={Calendar} label="Date (Optional)">
               <input type="date" name="date" min={indiaToday} value={formData.date} onChange={handleChange} className="w-full pl-11 pr-2 py-3.5 bg-slate-50 dark:bg-slate-950 border border-transparent dark:border-slate-800 rounded-xl text-[10px] font-bold outline-none dark:text-white" />
@@ -414,12 +567,36 @@ if (submitted) {
           </InputWrapper>
 
           <div className="grid grid-cols-1 gap-3">
-            <InputWrapper icon={User}>
-              <input type="text" name="name" required placeholder="Your Name" value              ={formData.name} onChange={handleChange} className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-transparent dark:border-slate-800 focus:border-brand-yellow rounded-xl text-xs font-bold outline-none dark:text-white" />
-            </InputWrapper>
-            <InputWrapper icon={Phone}>
-              <input type="tel" name="phone" required placeholder="Phone Number" value={formData.phone} onChange={handleChange} className="w-full pl-11 pr-4 py-4 border-2 border-brand-yellow rounded-xl text-base font-black outline-none dark:bg-slate-950 dark:text-white" />
-            </InputWrapper>
+           <InputWrapper icon={User}>
+  <input
+    type="text"
+    name="name"
+    placeholder="Your Name (optional)"
+    value={formData.name}
+    onChange={handleChange}
+    className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-transparent dark:border-slate-800 rounded-xl text-xs font-bold outline-none dark:text-white"
+  />
+  <p className="text-[8px] text-slate-400 dark:text-slate-500 mt-1 ml-1">
+    Name is optional — we will contact you by phone
+  </p>
+</InputWrapper>
+
+           <InputWrapper icon={Phone}>
+  <input
+    type="tel"
+    name="phone"
+    required
+    placeholder="Phone Number"
+    value={formData.phone}
+    onChange={(e) => {
+      const cleaned = e.target.value.replace(/\D/g, ""); // remove non digits
+      setFormData(prev => ({ ...prev, phone: cleaned.slice(0, 10) }));
+    }}
+    className="w-full pl-11 pr-4 py-4 border-2 border-brand-yellow rounded-xl text-base font-black outline-none dark:bg-slate-950 dark:text-white"
+    maxLength={10}
+  />
+</InputWrapper>
+
           </div>
 
           <div className="flex gap-3 pt-2">
@@ -441,6 +618,7 @@ if (submitted) {
 >
   {loading ? 'Processing...' : 'Confirm Booking'}
 </button>
+
 
             
           </div>
