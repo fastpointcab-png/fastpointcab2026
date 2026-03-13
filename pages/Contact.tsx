@@ -159,6 +159,7 @@ export const Contact: React.FC = () => {
     <p>11. AC will not work in hill areas (upwards) and stopped/parked vehicles.</p>
     <p>12. If km usage exceeds standard limits, tariff shifts automatically to Day/KM Basis.</p>
      <p>13. Bookings made via online ads (e.g., Google Ads) may appear when searching for other brands. Trustyyellowcabs is only responsible for bookings actually made with us. Customers cannot claim services from other brands using our ad links.</p>
+      <p>14. Our website and booking page may appear in search results when customers search for other taxi brand names. By clicking our advertisement, website link, WhatsApp, or call button, the customer acknowledges that they are contacting our company directly, not any other brand.</p>
                 </div>
               )}
             </div>
