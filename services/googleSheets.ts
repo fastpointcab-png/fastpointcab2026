@@ -11,6 +11,7 @@ export const appendBookingToSheet = async (bookingDetails: any) => {
     await fetch(SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
+      keepalive: true,
       headers: {
         'Content-Type': 'application/json',
       },
