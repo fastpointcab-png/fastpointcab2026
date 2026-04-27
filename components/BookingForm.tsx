@@ -432,14 +432,25 @@ if (dropRef.current && !dropAutocomplete.current) {
   // Abandoned Lead Capture Logic
   const leadSentRef = useRef(false);
   useEffect(() => {
-    const handleAbandonment = () => {
+    const handleAbandonment = async () => {
       // Only send if we have the minimum info and haven't sent yet
       if (!submitted && !leadSentRef.current && formData.phone && formData.phone.length === 10 && formData.pickup && formData.drop) {
         const isStep2 = step === 2;
-        sendBookingEmail({
+        const bookingData = {
           ...formData,
           estimatedFare: formData.estimatedFare || (isStep2 ? 'Abandoned at Step 2' : 'Abandoned Lead')
-        });
+        };
+        
+        sendBookingEmail(bookingData);
+        
+        // Save to Google Sheets
+        try {
+          const { appendBookingToSheet } = await import('../services/googleSheets');
+          await appendBookingToSheet(bookingData);
+        } catch (err) {
+          console.error('Abandonment sheet sync error:', err);
+        }
+
         leadSentRef.current = true;
       }
     };
