@@ -135,7 +135,6 @@ export const BookingForm: React.FC = () => {
   const [mapError, setMapError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<BookingDetails>({
-    name: '',
     phone: '',
     pickup: '',
     drop: '',
@@ -477,7 +476,17 @@ if (dropRef.current && !dropAutocomplete.current) {
 
     setLoading(true);
     try {
+      // Send Email
       const success = await sendBookingEmail(formData);
+      
+      // Save to Google Sheets
+      try {
+        const { appendBookingToSheet } = await import('../services/googleSheets');
+        await appendBookingToSheet(formData);
+      } catch (err) {
+        console.error('Sheet sync error:', err);
+      }
+      
       if (success) {
         leadSentRef.current = true; // Prevent abandonment lead after success
         setSubmitted(true);
@@ -522,7 +531,6 @@ if (submitted) {
     setSubmitted(false);      // go back to the form
     setStep(1);               // start from step 1
     setFormData({             // reset all fields
-      name: '',
       phone: '',
       pickup: '',
       drop: '',
@@ -706,7 +714,7 @@ if (submitted) {
           <div className="relative group">
             <div className="space-y-1.5 max-h-[240px] sm:max-h-[280px] overflow-y-auto pr-1 app-scroll">
             {VEHICLE_CONFIG.map((v) => {
-              const distanceVal = parseFloat(formData.distance) || 0;
+              const distanceVal = parseFloat(formData.distance || '0') || 0;
               const priceDisplay = distanceVal > 0 ? getFare(distanceVal, v.type) : '---';
 
               return (

@@ -32,7 +32,6 @@ export interface Service {
 }
 
 export interface BookingDetails {
-  name: string;
   email?: string;
   phone: string;
   pickup: string;

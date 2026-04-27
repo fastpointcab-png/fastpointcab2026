@@ -5,33 +5,25 @@ export const Contact: React.FC = () => {
   const [showTerms, setShowTerms] = useState(false);
 
   const handleWhatsAppClick = () => {
-    const text = `Hi Trustyyellowcabs, I have an inquiry about your taxi services in Coimbatore.`;
+    const text = `Hi Fastpointcab, I have an inquiry about your taxi services in Coimbatore.`;
     const phoneNumber = '919488834020';
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(text)}`;
     window.open(whatsappUrl, '_blank');
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 py-20">
+   <div className="min-h-screen bg-white dark:bg-slate-950 py-14 md:py-20">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-         <h1 className="
-  text-2xl 
-  sm:text-3xl 
-  md:text-5xl 
-  font-extrabold 
-  text-[#FF6467] 
-  dark:text-[#FF6467] 
-  mb-4
-">
-  ONLINE TAXI BOOKING
-  <span className="hidden sm:inline"> SUPPORT</span>
-</h1>
-
-          <p className="text-lg text-slate-600 dark:text-slate-400">
-            Book a safe and comfortable ride in Coimbatore anytime — 24/7 support and hassle-free Kovai red taxi booking available.
+        {/* Heading */}
+        <div className="text-center max-w-3xl mx-auto mb-12 md:mb-16">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4 md:mb-6">
+            Get in Touch
+          </h1>
+          <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400">
+            Fast pointCab for 24/7 safe and reliable taxi services in Coimbatore, Tamil Nadu.
           </p>
         </div>
+
 
         <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
           {/* Contact Info */}
