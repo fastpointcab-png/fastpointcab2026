@@ -32,8 +32,6 @@ export interface Service {
 }
 
 export interface BookingDetails {
-  name?: string;
-  leadId?: string;
   email?: string;
   phone: string;
   pickup: string;
@@ -43,8 +41,6 @@ export interface BookingDetails {
   vehicleType: VehicleType;
   distance?: string;
   estimatedFare?: string;
-  pickupCoords?: { lat: number; lng: number };
-  dropCoords?: { lat: number; lng: number };
 }
 
 export interface BillRequestDetails {

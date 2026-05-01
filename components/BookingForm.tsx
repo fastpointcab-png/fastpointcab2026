@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { BookingDetails, VehicleType } from '../types';
-import { MapPin, User, Phone, Car, Calendar, Clock, ArrowRight, ArrowLeft, CheckCircle2, MessageCircle, Map as MapIcon, AlertTriangle, LocateFixed } from 'lucide-react';
+import { MapPin, User, Phone, Car, Calendar, Clock, ArrowRight, ArrowLeft, CheckCircle2, MessageCircle, Map as MapIcon, AlertTriangle } from 'lucide-react';
 import { sendBookingEmail } from '../services/emailService';
 import { appendBookingToSheet } from '../services/googleSheets';
 
@@ -134,9 +134,6 @@ export const BookingForm: React.FC = () => {
   const [loadingFare, setLoadingFare] = useState(false);
   const [indiaToday, setIndiaToday] = useState('');
   const [mapError, setMapError] = useState<string | null>(null);
-  const [locating, setLocating] = useState(false);
-  const lastActiveField = useRef<'pickup' | 'drop'>('pickup');
-  const isMapMoving = useRef(false);
 
   const [formData, setFormData] = useState<BookingDetails>({
     phone: '',
@@ -265,87 +262,48 @@ style.innerHTML = `
     if (pickupAutocomplete.current && dropAutocomplete.current) return;
 
     try {
-      const COIMBATORE_CENTER = new google.maps.LatLng(11.0168, 76.9558);
-      const COIMBATORE_RADIUS = 50000; // 50km radius for search priority
+      const COIMBATORE_BOUNDS = new google.maps.LatLngBounds(
+        new google.maps.LatLng(10.60, 76.65),
+        new google.maps.LatLng(11.35, 77.10)
+      );
 
       const options = {
-        location: COIMBATORE_CENTER,
-        radius: COIMBATORE_RADIUS,
+        bounds: COIMBATORE_BOUNDS,
         strictBounds: false,
         componentRestrictions: { country: 'in' },
-        fields: ['formatted_address', 'geometry', 'name'],
+        fields: ['formatted_address', 'geometry'],
       };
 
-      // Also set bounds for UI bias
-      const COIMBATORE_BOUNDS = new google.maps.LatLngBounds(
-        new google.maps.LatLng(10.75, 76.70),
-        new google.maps.LatLng(11.25, 77.25)
-      );
-      (options as any).bounds = COIMBATORE_BOUNDS;
+    if (pickupRef.current && !pickupAutocomplete.current) {
+  pickupAutocomplete.current = new google.maps.places.Autocomplete(pickupRef.current, options);
+  pickupAutocomplete.current.addListener('place_changed', () => {
+    const place = pickupAutocomplete.current.getPlace();
+    if (place.formatted_address) {
+      setFormData(prev => ({ ...prev, pickup: place.formatted_address }));
+      // ✅ remove pickupRef.current.value = ...
+    }
+  });
+}
 
-      if (pickupRef.current && !pickupAutocomplete.current) {
-        pickupAutocomplete.current = new google.maps.places.Autocomplete(pickupRef.current, options);
-        pickupAutocomplete.current.addListener('place_changed', () => {
-          const place = pickupAutocomplete.current.getPlace();
-          if (place.geometry?.location) {
-            lastActiveField.current = 'pickup';
-            if (mapInstance.current) {
-              isMapMoving.current = true;
-              mapInstance.current.setCenter(place.geometry.location);
-              mapInstance.current.setZoom(17);
-              reverseGeocode(place.geometry.location, 'pickup');
-            }
-          }
-        });
-      }
-
-      if (dropRef.current && !dropAutocomplete.current) {
-        dropAutocomplete.current = new google.maps.places.Autocomplete(dropRef.current, options);
-        dropAutocomplete.current.addListener('place_changed', () => {
-          const place = dropAutocomplete.current.getPlace();
-          if (place.geometry?.location) {
-            lastActiveField.current = 'drop';
-            if (mapInstance.current) {
-              isMapMoving.current = true;
-              mapInstance.current.setCenter(place.geometry.location);
-              mapInstance.current.setZoom(17);
-              reverseGeocode(place.geometry.location, 'drop');
-            }
-          }
-        });
-      }
+if (dropRef.current && !dropAutocomplete.current) {
+  dropAutocomplete.current = new google.maps.places.Autocomplete(dropRef.current, options);
+  dropAutocomplete.current.addListener('place_changed', () => {
+    const place = dropAutocomplete.current.getPlace();
+    if (place.formatted_address) {
+      setFormData(prev => ({ ...prev, drop: place.formatted_address }));
+      // ✅ remove dropRef.current.value = ...
+    }
+  });
+}
     } catch (e) {
       console.error("Autocomplete Initialization Error:", e);
     }
   }, [googleLoaded]);
 
-  const reverseGeocode = (latlng: any, field: 'pickup' | 'drop') => {
-    if (!googleLoaded) return;
-    const geocoder = new google.maps.Geocoder();
-    geocoder.geocode({ location: latlng }, (results: any, status: string) => {
-      isMapMoving.current = false;
-      if (status === 'OK' && results[0]) {
-        const address = results[0].formatted_address;
-        // Handle LatLng vs LatLngLiteral
-        const lat = typeof latlng.lat === 'function' ? latlng.lat() : latlng.lat;
-        const lng = typeof latlng.lng === 'function' ? latlng.lng() : latlng.lng;
-        const coords = { lat, lng };
-        
-        setFormData(prev => ({
-          ...prev,
-          [field]: address,
-          [`${field}Coords`]: coords
-        }));
-
-        if (field === 'pickup' && pickupRef.current) pickupRef.current.value = address;
-        if (field === 'drop' && dropRef.current) dropRef.current.value = address;
-      }
-    });
-  };
-
   // Initialize Map (Only when visible)
   useEffect(() => {
     if (!googleLoaded || !mapRef.current) {
+      // Reset instances if container is gone
       mapInstance.current = null;
       directionsRenderer.current = null;
       return;
@@ -357,19 +315,7 @@ style.innerHTML = `
         center: { lat: 11.0168, lng: 76.9558 },
         zoom: 12,
         disableDefaultUI: true,
-        gestureHandling: 'greedy',
         styles:[{ featureType: "all", elementType: "labels.text.fill", stylers: [{ color: "#333333" }] }]
-      });
-
-      mapInstance.current.addListener('dragstart', () => {
-        isMapMoving.current = true;
-      });
-
-      mapInstance.current.addListener('idle', () => {
-        if (isMapMoving.current) {
-          const center = mapInstance.current.getCenter();
-          reverseGeocode(center, lastActiveField.current);
-        }
       });
 
       directionsService.current = new google.maps.DirectionsService();
@@ -388,25 +334,16 @@ style.innerHTML = `
     };
   }, [googleLoaded, !!(formData.pickup && formData.drop)]);
 
-  const updateMapRoute = useCallback((origin: any, destination: any) => {
+  const updateMapRoute = useCallback((origin: string, destination: string) => {
     if (!googleLoaded || !origin || !destination || !directionsRenderer.current) return;
-    
-    // Prioritize actual coordinate objects if passed
-    const requestOrigin = origin.lat ? { lat: Number(origin.lat), lng: Number(origin.lng) } : origin;
-    const requestDest = destination.lat ? { lat: Number(destination.lat), lng: Number(destination.lng) } : destination;
-
     directionsService.current.route(
-      { 
-        origin: requestOrigin, 
-        destination: requestDest, 
-        travelMode: google.maps.TravelMode.DRIVING 
-      },
+      { origin, destination, travelMode: google.maps.TravelMode.DRIVING },
       (result: any, status: string) => {
         if (status === 'OK') {
           directionsRenderer.current.setDirections(result);
           setMapError(null);
         } else {
-          setMapError("Route update failed. Check locations.");
+          setMapError("Route update failed.");
         }
       }
     );
@@ -414,15 +351,12 @@ style.innerHTML = `
 
   useEffect(() => {
     if (step === 1 && mapInstance.current) {
+      // Small timeout to ensure DOM is updated and map container has dimensions
       const timer = setTimeout(() => {
         if ((window as any).google?.maps) {
           google.maps.event.trigger(mapInstance.current, 'resize');
-          const p = formData.pickupCoords || formData.pickup;
-          const d = formData.dropCoords || formData.drop;
-          if (p && d) {
-            updateMapRoute(p, d);
-          } else if (formData.pickupCoords) {
-             mapInstance.current.setCenter(formData.pickupCoords);
+          if (formData.pickup && formData.drop) {
+            updateMapRoute(formData.pickup, formData.drop);
           } else {
             mapInstance.current.setCenter({ lat: 11.0168, lng: 76.9558 });
             mapInstance.current.setZoom(12);
@@ -431,27 +365,22 @@ style.innerHTML = `
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [step, formData.pickup, formData.drop, formData.pickupCoords, formData.dropCoords, updateMapRoute]);
+  }, [step, formData.pickup, formData.drop, updateMapRoute]);
 
   useEffect(() => {
-    const p = formData.pickupCoords || formData.pickup;
-    const d = formData.dropCoords || formData.drop;
-    if (p && d) updateMapRoute(p, d);
-  }, [formData.pickup, formData.drop, formData.pickupCoords, formData.dropCoords, updateMapRoute]);
+    if (formData.pickup && formData.drop) updateMapRoute(formData.pickup, formData.drop);
+  }, [formData.pickup, formData.drop, updateMapRoute]);
 
-  const calculateFare = useCallback((origin: any, destination: any, vehicle: VehicleType) => {
+  const calculateFare = useCallback((origin: string, destination: string, vehicle: VehicleType) => {
     if (!origin || !destination || !(window as any).google?.maps) return;
 
     setLoadingFare(true);
     const service = new google.maps.DistanceMatrixService();
-    
-    const requestOrigin = origin.lat ? { lat: Number(origin.lat), lng: Number(origin.lng) } : origin;
-    const requestDest = destination.lat ? { lat: Number(destination.lat), lng: Number(destination.lng) } : destination;
 
     service.getDistanceMatrix(
       {
-        origins: [requestOrigin],
-        destinations: [requestDest],
+        origins: [origin],
+        destinations: [destination],
         travelMode: google.maps.TravelMode.DRIVING,
         unitSystem: google.maps.UnitSystem.METRIC,
       },
@@ -473,50 +402,15 @@ style.innerHTML = `
   }, []);
 
   useEffect(() => {
-    const p = formData.pickupCoords || formData.pickup;
-    const d = formData.dropCoords || formData.drop;
-    if (p && d) {
-      calculateFare(p, d, formData.vehicleType);
+    if (formData.pickup && formData.drop) {
+      calculateFare(formData.pickup, formData.drop, formData.vehicleType);
     }
-  }, [formData.pickup, formData.drop, formData.pickupCoords, formData.dropCoords, formData.vehicleType, calculateFare]);
+  }, [formData.pickup, formData.drop, formData.vehicleType, calculateFare]);
 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleUseCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser');
-      return;
-    }
-
-    setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLocating(false);
-        const { latitude, longitude } = position.coords;
-        const latlng = { lat: latitude, lng: longitude };
-
-        if (!(window as any).google?.maps) {
-          alert('Google Maps not loaded yet');
-          return;
-        }
-
-        reverseGeocode(latlng, 'pickup');
-        
-        if (mapInstance.current) {
-          mapInstance.current.setCenter(latlng);
-          mapInstance.current.setZoom(15);
-        }
-      },
-      (error) => {
-        setLocating(false);
-        alert('Error getting location: ' + error.message);
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
   };
 
   const handleNextStep = async () => {
@@ -712,30 +606,18 @@ if (submitted) {
       <form onSubmit={handleSubmit} className="space-y-3.5">
         {/* Step 1 */}
         <div className={`${step === 1 ? 'space-y-3.5' : 'hidden'} animate-fade-in`}>
-          {/* Map - Always Visible in Step 1 for "Trust Map Center" experience */}
-          <div className="relative h-64 rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 shadow-inner animate-in fade-in zoom-in duration-500">
-            <div ref={mapRef} className="w-full h-full" />
-            
-            {/* Center Pin - Uber style */}
-            {(!formData.pickup || !formData.drop) && (
-              <div className="absolute inset-0 pointer-events-none flex items-center justify-center mb-8">
-                <div className="relative">
-                  <div className="w-8 h-8 rounded-full bg-[#FF6467]/20 flex items-center justify-center animate-pulse">
-                    <div className="w-2 h-2 rounded-full bg-[#FF6467]" />
-                  </div>
-                  <MapPin className="text-[#FF6467] absolute -top-6 left-1/2 -translate-x-1/2 drop-shadow-lg" size={32} />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 w-1 h-4 bg-slate-900/10 rounded-full" />
+          {/* Map - Only Visible in Step 1 when both locations are entered */}
+          {formData.pickup && formData.drop && (
+            <div className="relative h-48 rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 shadow-inner animate-in fade-in zoom-in duration-500">
+              <div ref={mapRef} className="w-full h-full" />
+              {mapError && (
+                <div className="absolute inset-0 bg-slate-900/80 flex flex-col items-center justify-center p-4 text-center">
+                  <AlertTriangle size={20} className="text-[#FF6467] mb-1" />
+                  <p className="text-[9px] text-white font-bold uppercase">{mapError}</p>
                 </div>
-              </div>
-            )}
-
-            {mapError && (
-              <div className="absolute inset-0 bg-slate-900/80 flex flex-col items-center justify-center p-4 text-center">
-                <AlertTriangle size={20} className="text-[#FF6467] mb-1" />
-                <p className="text-[9px] text-white font-bold uppercase">{mapError}</p>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           
           <div className="grid grid-cols-1 gap-3">
@@ -747,33 +629,21 @@ if (submitted) {
                   required
                   placeholder="Enter Pickup Location"
                   defaultValue={formData.pickup}
-                  onFocus={() => { lastActiveField.current = 'pickup'; }}
-                  className="w-full pl-11 pr-16 py-3 bg-slate-50 dark:bg-slate-950 border border-transparent dark:border-slate-800 focus:border-[#FF6467] rounded-xl text-xs font-bold outline-none dark:text-white"
+                  className="w-full pl-11 pr-10 py-3 bg-slate-50 dark:bg-slate-950 border border-transparent dark:border-slate-800 focus:border-[#FF6467] rounded-xl text-xs font-bold outline-none dark:text-white"
                 />
 
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                  {formData.pickup && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (pickupRef.current) pickupRef.current.value = '';
-                        setFormData(prev => ({ ...prev, pickup: '', pickupCoords: undefined }));
-                      }}
-                      className="text-slate-400 hover:text-[#FF6467]"
-                    >
-                      ✕
-                    </button>
-                  )}
+                {formData.pickup && (
                   <button
                     type="button"
-                    onClick={handleUseCurrentLocation}
-                    disabled={locating}
-                    className={`text-slate-400 hover:text-[#FF6467] transition-all ${locating ? 'animate-pulse text-[#FF6467]' : ''}`}
-                    title="Use Current Location"
+                    onClick={() => {
+                      if (pickupRef.current) pickupRef.current.value = '';
+                      setFormData(prev => ({ ...prev, pickup: '' }));
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#FF6467]"
                   >
-                    <LocateFixed size={16} />
+                    ✕
                   </button>
-                </div>
+                )}
               </div>
             </InputWrapper>
 
@@ -786,7 +656,6 @@ if (submitted) {
                   required
                   placeholder="Enter Destination"
                   defaultValue={formData.drop}
-                  onFocus={() => { lastActiveField.current = 'drop'; }}
                   className="w-full pl-11 pr-10 py-3 bg-slate-50 dark:bg-slate-950 border border-transparent dark:border-slate-800 focus:border-[#FF6467] rounded-xl text-xs font-bold outline-none dark:text-white"
                 />
 
