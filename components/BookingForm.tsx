@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { BookingDetails, VehicleType } from '../types';
 import { MapPin, User, Phone, Car, Calendar, Clock, ArrowRight, ArrowLeft, CheckCircle2, MessageCircle, Map as MapIcon, AlertTriangle } from 'lucide-react';
 import { sendBookingEmail } from '../services/emailService';
+import { appendBookingToSheet } from '../services/googleSheets';
 
 declare const google: any;
 
@@ -147,6 +148,12 @@ export const BookingForm: React.FC = () => {
 
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const sessionLeadId = useRef(`lead_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`);
+  const isSubmittingRef = useRef(false);
+
+  useEffect(() => {
+    setFormData(prev => ({ ...prev, leadId: sessionLeadId.current }));
+  }, []);
 
   useEffect(() => {
     const now = new Date();
@@ -433,25 +440,25 @@ if (dropRef.current && !dropAutocomplete.current) {
   const leadSentRef = useRef(false);
   useEffect(() => {
     const handleAbandonment = async () => {
-      // Only send if we have the minimum info and haven't sent yet
-      if (!submitted && !leadSentRef.current && formData.phone && formData.phone.length === 10 && formData.pickup && formData.drop) {
+      // Only send if we have basic info, not submitted, not currently submitting, and haven't sent yet
+      if (!submitted && !isSubmittingRef.current && !leadSentRef.current && formData.phone && formData.phone.length === 10 && formData.pickup && formData.drop) {
         const isStep2 = step === 2;
         const bookingData = {
           ...formData,
-          estimatedFare: formData.estimatedFare || (isStep2 ? 'Abandoned at Step 2' : 'Abandoned Lead')
+          estimatedFare: formData.estimatedFare || (isStep2 ? 'Abandoned at Step 2' : 'Abandoned Lead (Step 1)')
         };
+        
+        // ⚠️ Mark as sent synchronously BEFORE async calls to prevent duplicate triggers
+        leadSentRef.current = true;
         
         sendBookingEmail(bookingData);
         
         // Save to Google Sheets
         try {
-          const { appendBookingToSheet } = await import('../services/googleSheets');
           await appendBookingToSheet(bookingData);
         } catch (err) {
           console.error('Abandonment sheet sync error:', err);
         }
-
-        leadSentRef.current = true;
       }
     };
 
@@ -461,16 +468,14 @@ if (dropRef.current && !dropAutocomplete.current) {
       }
     };
 
-    // iOS Safari reliability: pagehide and blur
+    // iOS Safari reliability: pagehide
     window.addEventListener('pagehide', handleAbandonment);
     window.addEventListener('beforeunload', handleAbandonment);
-    window.addEventListener('blur', handleAbandonment);
     document.addEventListener('visibilitychange', onVisibilityChange);
 
     return () => {
       window.removeEventListener('pagehide', handleAbandonment);
       window.removeEventListener('beforeunload', handleAbandonment);
-      window.removeEventListener('blur', handleAbandonment);
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, [formData, submitted, step]);
@@ -486,27 +491,32 @@ if (dropRef.current && !dropAutocomplete.current) {
     }
 
     setLoading(true);
+    isSubmittingRef.current = true;
+    leadSentRef.current = true; // Prevent abandonment lead during/after this process
+
     try {
       // Send Email
       const success = await sendBookingEmail(formData);
       
       // Save to Google Sheets
       try {
-        const { appendBookingToSheet } = await import('../services/googleSheets');
         await appendBookingToSheet(formData);
       } catch (err) {
         console.error('Sheet sync error:', err);
       }
       
       if (success) {
-        leadSentRef.current = true; // Prevent abandonment lead after success
         setSubmitted(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
+        isSubmittingRef.current = false;
+        leadSentRef.current = false; // Allow retry or abandonment capture on failure
         alert("Booking failed. Please try again.");
       }
     } catch (err) {
       console.error(err);
+      isSubmittingRef.current = false;
+      leadSentRef.current = false;
       alert("Error sending booking. Check console.");
     } finally {
       setLoading(false);
@@ -629,7 +639,7 @@ if (submitted) {
                       if (pickupRef.current) pickupRef.current.value = '';
                       setFormData(prev => ({ ...prev, pickup: '' }));
                     }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#FF6467]"
                   >
                     ✕
                   </button>
@@ -656,7 +666,7 @@ if (submitted) {
                       if (dropRef.current) dropRef.current.value = '';
                       setFormData(prev => ({ ...prev, drop: '' }));
                     }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#FF6467]"
                   >
                     ✕
                   </button>
@@ -696,7 +706,7 @@ if (submitted) {
           <button 
             type="button" 
             onClick={handleNextStep} 
-            className="w-full bg-[#FF6467] hover:bg-[#ff7a7d] text-white font-black py-4 rounded-2xl shadow-lg shadow-[#FF6467]/20 uppercase tracking-widest text-xs active:scale-95 transition-all flex items-center justify-center gap-2"
+            className="w-full bg-[#FF6467] hover:bg-[#e55a5d] text-white font-black py-4 rounded-2xl shadow-lg shadow-[#FF6467]/20 uppercase tracking-widest text-xs active:scale-95 transition-all flex items-center justify-center gap-2"
           >
             Continue <ArrowRight size={18} />
           </button>
@@ -800,7 +810,7 @@ if (submitted) {
         <button
   type="submit"
   disabled={loading}
-  className="flex-1 bg-[#FF6467] hover:bg-[#ff7a7d] text-white font-black py-4 rounded-2xl shadow-lg shadow-[#FF6467]/20 uppercase tracking-widest text-xs active:scale-95 transition-all"
+  className="flex-1 bg-[#FF6467] hover:bg-[#e55a5d] text-white font-black py-4 rounded-2xl shadow-lg shadow-[#FF6467]/20 uppercase tracking-widest text-xs active:scale-95 transition-all"
   onClick={() => {
     // Scroll to top when clicked (optional)
     window.scrollTo({ top: 0, behavior: 'smooth' });

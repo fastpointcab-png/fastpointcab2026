@@ -13,7 +13,7 @@ export const appendBookingToSheet = async (bookingDetails: any) => {
       mode: 'no-cors',
       keepalive: true,
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'text/plain',
       },
       body: JSON.stringify({
         ...bookingDetails,
