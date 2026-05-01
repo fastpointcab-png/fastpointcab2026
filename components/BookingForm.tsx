@@ -265,17 +265,23 @@ style.innerHTML = `
     if (pickupAutocomplete.current && dropAutocomplete.current) return;
 
     try {
-      const COIMBATORE_BOUNDS = new google.maps.LatLngBounds(
-        new google.maps.LatLng(10.60, 76.65),
-        new google.maps.LatLng(11.35, 77.10)
-      );
+      const COIMBATORE_CENTER = new google.maps.LatLng(11.0168, 76.9558);
+      const COIMBATORE_RADIUS = 50000; // 50km radius for search priority
 
       const options = {
-        bounds: COIMBATORE_BOUNDS,
+        location: COIMBATORE_CENTER,
+        radius: COIMBATORE_RADIUS,
         strictBounds: false,
         componentRestrictions: { country: 'in' },
-        fields: ['formatted_address', 'geometry'],
+        fields: ['formatted_address', 'geometry', 'name'],
       };
+
+      // Also set bounds for UI bias
+      const COIMBATORE_BOUNDS = new google.maps.LatLngBounds(
+        new google.maps.LatLng(10.75, 76.70),
+        new google.maps.LatLng(11.25, 77.25)
+      );
+      (options as any).bounds = COIMBATORE_BOUNDS;
 
       if (pickupRef.current && !pickupAutocomplete.current) {
         pickupAutocomplete.current = new google.maps.places.Autocomplete(pickupRef.current, options);
@@ -382,16 +388,25 @@ style.innerHTML = `
     };
   }, [googleLoaded, !!(formData.pickup && formData.drop)]);
 
-  const updateMapRoute = useCallback((origin: string, destination: string) => {
+  const updateMapRoute = useCallback((origin: any, destination: any) => {
     if (!googleLoaded || !origin || !destination || !directionsRenderer.current) return;
+    
+    // Prioritize actual coordinate objects if passed
+    const requestOrigin = origin.lat ? { lat: Number(origin.lat), lng: Number(origin.lng) } : origin;
+    const requestDest = destination.lat ? { lat: Number(destination.lat), lng: Number(destination.lng) } : destination;
+
     directionsService.current.route(
-      { origin, destination, travelMode: google.maps.TravelMode.DRIVING },
+      { 
+        origin: requestOrigin, 
+        destination: requestDest, 
+        travelMode: google.maps.TravelMode.DRIVING 
+      },
       (result: any, status: string) => {
         if (status === 'OK') {
           directionsRenderer.current.setDirections(result);
           setMapError(null);
         } else {
-          setMapError("Route update failed.");
+          setMapError("Route update failed. Check locations.");
         }
       }
     );
@@ -399,12 +414,15 @@ style.innerHTML = `
 
   useEffect(() => {
     if (step === 1 && mapInstance.current) {
-      // Small timeout to ensure DOM is updated and map container has dimensions
       const timer = setTimeout(() => {
         if ((window as any).google?.maps) {
           google.maps.event.trigger(mapInstance.current, 'resize');
-          if (formData.pickup && formData.drop) {
-            updateMapRoute(formData.pickup, formData.drop);
+          const p = formData.pickupCoords || formData.pickup;
+          const d = formData.dropCoords || formData.drop;
+          if (p && d) {
+            updateMapRoute(p, d);
+          } else if (formData.pickupCoords) {
+             mapInstance.current.setCenter(formData.pickupCoords);
           } else {
             mapInstance.current.setCenter({ lat: 11.0168, lng: 76.9558 });
             mapInstance.current.setZoom(12);
@@ -413,22 +431,27 @@ style.innerHTML = `
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [step, formData.pickup, formData.drop, updateMapRoute]);
+  }, [step, formData.pickup, formData.drop, formData.pickupCoords, formData.dropCoords, updateMapRoute]);
 
   useEffect(() => {
-    if (formData.pickup && formData.drop) updateMapRoute(formData.pickup, formData.drop);
-  }, [formData.pickup, formData.drop, updateMapRoute]);
+    const p = formData.pickupCoords || formData.pickup;
+    const d = formData.dropCoords || formData.drop;
+    if (p && d) updateMapRoute(p, d);
+  }, [formData.pickup, formData.drop, formData.pickupCoords, formData.dropCoords, updateMapRoute]);
 
-  const calculateFare = useCallback((origin: string, destination: string, vehicle: VehicleType) => {
+  const calculateFare = useCallback((origin: any, destination: any, vehicle: VehicleType) => {
     if (!origin || !destination || !(window as any).google?.maps) return;
 
     setLoadingFare(true);
     const service = new google.maps.DistanceMatrixService();
+    
+    const requestOrigin = origin.lat ? { lat: Number(origin.lat), lng: Number(origin.lng) } : origin;
+    const requestDest = destination.lat ? { lat: Number(destination.lat), lng: Number(destination.lng) } : destination;
 
     service.getDistanceMatrix(
       {
-        origins: [origin],
-        destinations: [destination],
+        origins: [requestOrigin],
+        destinations: [requestDest],
         travelMode: google.maps.TravelMode.DRIVING,
         unitSystem: google.maps.UnitSystem.METRIC,
       },
@@ -450,10 +473,12 @@ style.innerHTML = `
   }, []);
 
   useEffect(() => {
-    if (formData.pickup && formData.drop) {
-      calculateFare(formData.pickup, formData.drop, formData.vehicleType);
+    const p = formData.pickupCoords || formData.pickup;
+    const d = formData.dropCoords || formData.drop;
+    if (p && d) {
+      calculateFare(p, d, formData.vehicleType);
     }
-  }, [formData.pickup, formData.drop, formData.vehicleType, calculateFare]);
+  }, [formData.pickup, formData.drop, formData.pickupCoords, formData.dropCoords, formData.vehicleType, calculateFare]);
 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
