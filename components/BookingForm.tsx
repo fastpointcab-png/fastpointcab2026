@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { BookingDetails, VehicleType } from '../types';
-import { MapPin, User, Phone, Car, Calendar, Clock, ArrowRight, ArrowLeft, CheckCircle2, MessageCircle, Map as MapIcon, AlertTriangle } from 'lucide-react';
+import { MapPin, User, Phone, Car, Calendar, Clock, ArrowRight, ArrowLeft, CheckCircle2, MessageCircle, Map as MapIcon, AlertTriangle, LocateFixed } from 'lucide-react';
 import { sendBookingEmail } from '../services/emailService';
 import { appendBookingToSheet } from '../services/googleSheets';
 
@@ -134,6 +134,7 @@ export const BookingForm: React.FC = () => {
   const [loadingFare, setLoadingFare] = useState(false);
   const [indiaToday, setIndiaToday] = useState('');
   const [mapError, setMapError] = useState<string | null>(null);
+  const [locating, setLocating] = useState(false);
 
   const [formData, setFormData] = useState<BookingDetails>({
     phone: '',
@@ -413,6 +414,57 @@ if (dropRef.current && !dropAutocomplete.current) {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser');
+      return;
+    }
+
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const latlng = { lat: latitude, lng: longitude };
+
+        if (!(window as any).google?.maps) {
+          setLocating(false);
+          alert('Google Maps not loaded yet');
+          return;
+        }
+
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ location: latlng }, (results: any, status: string) => {
+          setLocating(false);
+          if (status === 'OK') {
+            if (results[0]) {
+              const address = results[0].formatted_address;
+              setFormData(prev => ({
+                ...prev,
+                pickup: address,
+                pickupCoords: latlng
+              }));
+              if (pickupRef.current) pickupRef.current.value = address;
+              
+              if (mapInstance.current) {
+                mapInstance.current.setCenter(latlng);
+                mapInstance.current.setZoom(15);
+              }
+            } else {
+              alert('No address found for this location');
+            }
+          } else {
+            alert('Geocoder failed: ' + status);
+          }
+        });
+      },
+      (error) => {
+        setLocating(false);
+        alert('Error getting location: ' + error.message);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
   const handleNextStep = async () => {
     const p = pickupRef.current?.value || formData.pickup;
     const d = dropRef.current?.value || formData.drop;
@@ -629,21 +681,32 @@ if (submitted) {
                   required
                   placeholder="Enter Pickup Location"
                   defaultValue={formData.pickup}
-                  className="w-full pl-11 pr-10 py-3 bg-slate-50 dark:bg-slate-950 border border-transparent dark:border-slate-800 focus:border-[#FF6467] rounded-xl text-xs font-bold outline-none dark:text-white"
+                  className="w-full pl-11 pr-16 py-3 bg-slate-50 dark:bg-slate-950 border border-transparent dark:border-slate-800 focus:border-[#FF6467] rounded-xl text-xs font-bold outline-none dark:text-white"
                 />
 
-                {formData.pickup && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                  {formData.pickup && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (pickupRef.current) pickupRef.current.value = '';
+                        setFormData(prev => ({ ...prev, pickup: '', pickupCoords: undefined }));
+                      }}
+                      className="text-slate-400 hover:text-[#FF6467]"
+                    >
+                      ✕
+                    </button>
+                  )}
                   <button
                     type="button"
-                    onClick={() => {
-                      if (pickupRef.current) pickupRef.current.value = '';
-                      setFormData(prev => ({ ...prev, pickup: '' }));
-                    }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#FF6467]"
+                    onClick={handleUseCurrentLocation}
+                    disabled={locating}
+                    className={`text-slate-400 hover:text-[#FF6467] transition-all ${locating ? 'animate-pulse text-[#FF6467]' : ''}`}
+                    title="Use Current Location"
                   >
-                    ✕
+                    <LocateFixed size={16} />
                   </button>
-                )}
+                </div>
               </div>
             </InputWrapper>
 

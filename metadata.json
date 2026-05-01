@@ -1,7 +1,5 @@
 {
   "name": "FastPointCab",
   "description": "Taxi Coimbatore. Airport transfers, outstation, and city Cabs.",
-  "requestFramePermissions": [
-    "geolocation"
-  ]
+ "requestFramePermissions": ["geolocation"]
 }
