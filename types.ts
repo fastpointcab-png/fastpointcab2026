@@ -44,6 +44,7 @@ export interface BookingDetails {
   distance?: string;
   estimatedFare?: string;
   pickupCoords?: { lat: number; lng: number };
+  dropCoords?: { lat: number; lng: number };
 }
 
 export interface BillRequestDetails {
