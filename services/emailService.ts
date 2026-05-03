@@ -25,7 +25,7 @@ export const sendBookingEmail = async (details: BookingDetails): Promise<boolean
   const tgMessage = encodeURIComponent(
 `🚖 *New Booking Request*
 
-*Customer:* ${details.name}
+
 *Phone:* ${details.phone}
 
 *Pickup:* [${details.pickup}](https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(details.pickup)})

@@ -11,6 +11,11 @@ export enum VehicleType {
   CUSTOM = 'Custom'
 }
 
+export enum TripType {
+  ONE_WAY = 'Outstation',
+  LOCAL = 'Local'
+}
+
 export interface Vehicle {
   id: string;
   name: string;
@@ -29,6 +34,20 @@ export interface Service {
   description: string;
   icon: string;
   features: string[];
+  image?: string;
+}
+
+export interface FareBreakdown {
+  distanceFare: number;
+  driverBeta: number;
+  extraDaysFare: number;
+  waitingCharge?: number;
+  hillCharge?: number;
+  baseFare: number;
+  total: number;
+  ratePerKm?: number;
+  billableDistance?: number;
+  extraCharges?: number;
 }
 
 export interface BookingDetails {
@@ -36,17 +55,25 @@ export interface BookingDetails {
   phone: string;
   pickup: string;
   drop: string;
-  date: string;
-  time: string;
+  date?: string;
+  time?: string;
+  numberOfDays?: string;
+  waitingHours?: string;
   vehicleType: VehicleType;
+  tripType: TripType;
+  localPackage?: string;
+  isHillStation?: boolean;
   distance?: string;
+  rawDistance?: number;
   estimatedFare?: string;
+  fareBreakdown?: FareBreakdown;
+  leadId?: string;
 }
 
 export interface BillRequestDetails {
   name: string;
   phone: string;
-  date: string;
+  date?: string;
   pickup: string;
   drop: string;
   amount: string;
@@ -59,14 +86,4 @@ export interface Testimonial {
   role: string;
   comment: string;
   rating: number;
-}
-
-
-export interface Service {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-  features: string[];
-  image?: string; // ✅ Add this line
 }
