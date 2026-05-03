@@ -3,11 +3,11 @@ import { Phone } from 'lucide-react';
 
 export const FloatingCallButton: React.FC = () => {
   return (
-    <a
-      href="tel:+919488834020"
-      className="fixed bottom-24 md:bottom-28 right-4 md:right-6 z-[60] group flex flex-col items-center animate-magnetic-float"
-      aria-label="Call for Booking"
-    >
+   <a
+  href="tel:+919488834020"
+  className="fixed bottom-24 md:bottom-28 right-4 md:right-6 z-[60] group flex flex-col items-center animate-magnetic-float hidden md:flex"
+  aria-label="Call for Booking"
+>
       {/* Radar Signal Pulses */}
       <div className="absolute inset-0 border-2 border-[#FF6467] rounded-full animate-radar-signal"></div>
       <div className="absolute inset-0 border-2 border-[#FF6467] rounded-full animate-radar-signal [animation-delay:1.5s]"></div>
