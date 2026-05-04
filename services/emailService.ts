@@ -70,23 +70,27 @@ we are just one tap away`
 const waLink = `https://wa.me/${phoneWithCountryCode}?text=${waMessage}`;
 
 
-  const emailContent = {
+ const emailContent = {
     sender: { name: "FastPointCab Booking", email: "fastpointcab@gmail.com" },
     to: [{ email: "fastpointcab@gmail.com", name: "FastPointCab Admin" }],
-    subject: `Booking Request: ${details.pickup} [ Fare: ${details.estimatedFare || 'N/A'} ]`,
+    subject: `${details.isLead ? '[LEAD] ' : ''}Booking Request: ${details.pickup} [ Fare: ${details.estimatedFare || 'N/A'} ]`,
     htmlContent: `
   <div style="font-family: sans-serif; color: #1e293b; max-width: 600px; margin: 0 auto; border: 1px solid #f1f5f9; border-radius: 12px; overflow: hidden;">
-
+    ${details.isLead ? `
+    <div style="background-color: #fef3c7; color: #92400e; padding: 10px; text-align: center; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">
+      ⚠️ Abandoned Lead - Non-Completed Booking
+    </div>
+    ` : ''}
     <div style="padding: 30px;">
 
       <!-- Quote Box -->
       <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 25px; text-align: center;">
         <p style="margin: 0 0 10px 0; font-size: 14px; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">
-          Estimated Quote
+          ${details.isLead ? 'Lead Status' : 'Estimated Quote'}
         </p>
 
         <h2 style="margin: 0; font-size: 32px; color: #0f172a;">
-          ${details.estimatedFare || "Calculated on call"}
+          ${details.isLead ? 'Abandoned' : (details.estimatedFare || "Calculated on call")}
         </h2>
 
         <p style="margin: 5px 0 0 0; font-size: 14px; color: #0f172a;">
@@ -100,7 +104,7 @@ const waLink = `https://wa.me/${phoneWithCountryCode}?text=${waMessage}`;
         <tr>
           <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #64748b;">Customer</td>
           <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; font-weight: bold;">
-            Web Booking
+            ${details.isLead ? 'Lead Intelligence' : 'Web Booking'}
           </td>
         </tr>
 
@@ -185,6 +189,7 @@ const waLink = `https://wa.me/${phoneWithCountryCode}?text=${waMessage}`;
   try {
     const response = await fetch(url, {
       method: 'POST',
+      keepalive: true,
       headers: {
         'accept': 'application/json',
         'api-key': apiKey,

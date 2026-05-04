@@ -68,6 +68,7 @@ export interface BookingDetails {
   estimatedFare?: string;
   fareBreakdown?: FareBreakdown;
   leadId?: string;
+  isLead?: boolean;
 }
 
 export interface BillRequestDetails {

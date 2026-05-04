@@ -518,6 +518,21 @@ export const BookingForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const sessionLeadId = useRef(`lead_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`);
   const isSubmittingRef = useRef(false);
+  const formDataRef = useRef(formData);
+  const stepRef = useRef(step);
+  const submittedRef = useRef(submitted);
+
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
+
+  useEffect(() => {
+    stepRef.current = step;
+  }, [step]);
+
+  useEffect(() => {
+    submittedRef.current = submitted;
+  }, [submitted]);
 
   useEffect(() => {
     setFormData(prev => ({ ...prev, leadId: sessionLeadId.current }));
@@ -888,30 +903,45 @@ if (dropRef.current && !dropAutocomplete.current) {
 
   // Abandoned Lead Capture Logic
   const leadSentRef = useRef(false);
-  useEffect(() => {
-    const handleAbandonment = async () => {
-      // Only send if we have basic info, not submitted, not currently submitting, and haven't sent yet
-      if (!submitted && !isSubmittingRef.current && !leadSentRef.current && formData.phone && formData.phone.length === 10 && formData.pickup && formData.drop) {
-        const isStep2 = step === 2;
-        const bookingData = {
-          ...formData,
-          estimatedFare: formData.estimatedFare || (isStep2 ? 'Abandoned at Step 2' : 'Abandoned Lead (Step 1)')
-        };
-        
-        // ⚠️ Mark as sent synchronously BEFORE async calls to prevent duplicate triggers
-        leadSentRef.current = true;
-        
-        sendBookingEmail(bookingData);
-        
-        // Save to Google Sheets
-        try {
-          await appendBookingToSheet(bookingData);
-        } catch (err) {
-          console.error('Abandonment sheet sync error:', err);
-        }
-      }
-    };
 
+  const handleAbandonment = useCallback(async () => {
+    const currentFormData = formDataRef.current;
+    const currentSubmitted = submittedRef.current;
+    const currentStep = stepRef.current;
+
+    // Only send if we have basic info, not submitted, not currently submitting, and haven't sent yet
+    if (
+      !currentSubmitted && 
+      !isSubmittingRef.current && 
+      !leadSentRef.current && 
+      currentFormData.phone && 
+      currentFormData.phone.length === 10 && 
+      (currentFormData.pickup || currentFormData.drop)
+    ) {
+      const bookingData = {
+        ...currentFormData,
+        isLead: true,
+        estimatedFare: currentFormData.estimatedFare || (currentStep >= 2 ? 'Abandoned at Vehicle/Summary Select' : 'Abandoned Lead (Step 1)')
+      };
+      
+      // ⚠️ Mark as sent synchronously BEFORE async calls to prevent duplicate triggers
+      leadSentRef.current = true;
+      
+      console.log('Capturing abandoned lead...', bookingData.phone);
+      
+      // Send Email
+      sendBookingEmail(bookingData);
+      
+      // Save to Google Sheets
+      try {
+        await appendBookingToSheet(bookingData);
+      } catch (err) {
+        console.error('Abandonment sheet sync error:', err);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     const onVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         handleAbandonment();
@@ -927,8 +957,9 @@ if (dropRef.current && !dropAutocomplete.current) {
       window.removeEventListener('pagehide', handleAbandonment);
       window.removeEventListener('beforeunload', handleAbandonment);
       document.removeEventListener('visibilitychange', onVisibilityChange);
+      handleAbandonment();
     };
-  }, [formData, submitted, step]);
+  }, [handleAbandonment]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1199,7 +1230,7 @@ if (submitted) {
       <button 
             type="button" 
             onClick={handleNextStep} 
-            className="w-full bg-[#FF6467] hover:bg-[#e55a5d] text-white font-black py-4 rounded-2xl shadow-lg shadow-[#FF6467]/20 uppercase tracking-widest text-xs active:scale-95 transition-all flex items-center justify-center gap-2"
+            className="w-full bg-[#FF6467] hover:bg-[#E55A5D] text-white font-black py-4 rounded-2xl shadow-lg shadow-[#FF6467]/20 uppercase tracking-widest text-xs active:scale-95 transition-all flex items-center justify-center gap-2"
           >
             Continue <ArrowRight size={18} />
           </button>
@@ -1223,7 +1254,7 @@ if (submitted) {
           </div>
 
           <div className="relative group">
-            <div className="space-y-1.5 max-h-[240px] sm:max-h-[280px] overflow-y-auto pr-1 app-scroll">
+            <div className="space-y-1.5 max-h-[400px] sm:max-h-[280px] overflow-y-auto pr-1 app-scroll">
             {VEHICLE_CONFIG.map((v) => {
               return (
                 <button
@@ -1305,7 +1336,7 @@ if (submitted) {
         <button
   type="button"
   disabled={loading}
-  className="flex-1 bg-[#FF6467] hover:bg-[#e55a5d] text-white font-black py-4 rounded-2xl shadow-lg shadow-[#FF6467]/20 uppercase tracking-widest text-xs active:scale-95 transition-all"
+  className="flex-1 bg-[#FF6467] hover:bg-[#E55A5D] text-white font-black py-4 rounded-2xl shadow-lg shadow-[#FF6467]/20 uppercase tracking-widest text-xs active:scale-95 transition-all"
   onClick={() => {
     if (!formData.vehicleType) {
       alert("Please select a vehicle.");
@@ -1464,7 +1495,7 @@ if (submitted) {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-[#FF6467] hover:bg-[#e55a5d] text-white font-black py-4 rounded-2xl shadow-lg shadow-[#FF6467]/20 uppercase tracking-widest text-xs active:scale-95 transition-all flex items-center justify-center gap-2"
+              className="flex-1 bg-[#FF6467] hover:bg-[#E55A5D] text-white font-black py-4 rounded-2xl shadow-lg shadow-[#FF6467]/20 uppercase tracking-widest text-xs active:scale-95 transition-all flex items-center justify-center gap-2"
             >
               {loading ? 'Booking...' : (
                 <>
