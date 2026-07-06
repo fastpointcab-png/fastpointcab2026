@@ -514,13 +514,13 @@ useEffect(() => {
     />
 
     <div className="flex-1 overflow-hidden">
-      <div className="text-[14px] font-medium text-slate-900 dark:text-white leading-5">
-        {p.structured_formatting.main_text}
-      </div>
+  <div className="text-[14px] font-semibold text-[#FF6467] dark:text-[#FF6467] leading-5">
+    {p.structured_formatting.main_text}
+  </div>
 
-      <div className="text-[12px] text-slate-500 dark:text-slate-400 mt-1 leading-5 break-words">
-        {p.structured_formatting.secondary_text || p.description}
-      </div>
+    <div className="text-[12px] text-slate-900 dark:text-white mt-1 leading-5 break-words font-medium">
+  {p.structured_formatting.secondary_text || p.description}
+</div>
     </div>
   </button>
 ))}
