@@ -364,33 +364,83 @@ const LocationSearchOverlay = ({ type, onSelect, onClose, googleLoaded, initialV
     }
   }, [googleLoaded]);
 
-  // Handle body scroll lock
+  // Handle body scroll lock and hiding other layout components on mobile
   useEffect(() => {
     document.body.style.overflow = 'hidden';
+    document.body.classList.add('mobile-search-active');
     return () => {
       document.body.style.overflow = 'unset';
+      document.body.classList.remove('mobile-search-active');
     };
   }, []);
 
-  useEffect(() => {
-    if (query.length > 0 && service.current) {
-      const COIMBATORE_CENTER = new (window as any).google.maps.LatLng(11.0168, 76.9558);
-      service.current.getPlacePredictions({ 
-        input: query, 
-        componentRestrictions: { country: 'in' },
-        location: COIMBATORE_CENTER,
-        radius: 50000 
-      }, (results: any) => {
-        if (results) setPredictions(results);
-      });
-    } else {
-      setPredictions([]);
-    }
-  }, [query]);
+useEffect(() => {
+  if (!query || !service.current) {
+    setPredictions([]);
+    return;
+  }
 
+  const serviceInstance = service.current;
+
+  const COIMBATORE_CENTER = new google.maps.LatLng(11.0168, 76.9558);
+
+  // 1. Search with Coimbatore bias
+  serviceInstance.getPlacePredictions(
+    {
+      input: query,
+      componentRestrictions: { country: "in" },
+      location: COIMBATORE_CENTER,
+      radius: 45000,
+      types: ["geocode"],
+    },
+    (cbeResults: any[] = []) => {
+      // 2. Search without location bias
+      serviceInstance.getPlacePredictions(
+        {
+          input: query,
+          componentRestrictions: { country: "in" },
+        },
+        (allResults: any[] = []) => {
+          const map = new Map();
+
+          // Coimbatore results first
+          cbeResults.forEach((item) => {
+            map.set(item.place_id, item);
+          });
+
+          // Then all other results
+          allResults.forEach((item) => {
+            if (!map.has(item.place_id)) {
+              map.set(item.place_id, item);
+            }
+          });
+
+          setPredictions([...map.values()]);
+        }
+      );
+    }
+  );
+}, [query]);
   return (
     <div className="fixed inset-0 bg-white dark:bg-slate-900 z-[9999] flex flex-col animate-in slide-in-from-bottom-5 duration-300 h-screen">
-      <div className="flex flex-col px-4 pb-4 pt-[calc(env(safe-area-inset-top,1rem)+80px)] bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+      <style>{`
+        .mobile-search-active nav {
+          display: none !important;
+        }
+        .mobile-search-active footer {
+          display: none !important;
+        }
+        .mobile-search-active [aria-label="Call for Booking"] {
+          display: none !important;
+        }
+        .mobile-search-active .fixed.bottom-0 {
+          display: none !important;
+        }
+        .mobile-search-active [aria-label="Chat Support"] {
+          display: none !important;
+        }
+      `}</style>
+      <div className="flex flex-col px-4 pb-4 pt-[calc(env(safe-area-inset-top,1rem)+16px)] bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-center justify-between mb-4">
           <button 
             onClick={onClose} 
@@ -453,24 +503,25 @@ const LocationSearchOverlay = ({ type, onSelect, onClose, googleLoaded, initialV
   </button>
 )} 
   
- {predictions.map((p) => (
-  <button 
+{predictions.map((p) => (
+  <button
     key={p.place_id}
     onClick={() => onSelect(p.description)}
-    className="w-full flex items-start gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors text-left group border-b border-slate-50 dark:border-slate-800 last:border-none"
+    className="w-full flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left border-b border-slate-100 dark:border-slate-800"
   >
-    <div className="bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl text-slate-400 group-hover:bg-[#FF6467]/10 group-hover:text-[#FF6467] transition-all">
-      <MapPin size={18} />
-    </div>
+    <MapPin
+      size={18}
+      className="text-slate-400 mt-1 flex-shrink-0"
+    />
 
-    <div className="flex-1 min-w-0">
-      <p className="text-[13px] font-semibold text-slate-900 dark:text-white leading-tight line-clamp-1 mb-0.5">
+    <div className="flex-1 overflow-hidden">
+      <div className="text-[14px] font-medium text-slate-900 dark:text-white leading-5">
         {p.structured_formatting.main_text}
-      </p>
+      </div>
 
-      <p className="text-[11px] text-slate-500 font-medium tracking-tight line-clamp-2 opacity-80 whitespace-normal">
-        {p.structured_formatting.secondary_text}
-      </p>
+      <div className="text-[12px] text-slate-500 dark:text-slate-400 mt-1 leading-5 break-words">
+        {p.structured_formatting.secondary_text || p.description}
+      </div>
     </div>
   </button>
 ))}
@@ -806,7 +857,7 @@ if (dropRef.current && !dropAutocomplete.current) {
   }, [formData.pickup, formData.drop, formData.tripType, updateMapRoute]);
 
   const calculateFare = useCallback(async (origin: string, destination: string, vehicle: VehicleType, tripType: TripType) => {
-    const isHill = (await checkIsHillStation(origin)) || (await checkIsHillStation(destination));
+    const isHill = false;
     
     if (tripType === TripType.LOCAL) {
       const pkg = LOCAL_PACKAGES.find(p => p.id === formData.localPackage) || LOCAL_PACKAGES[0];
@@ -1424,62 +1475,27 @@ if (submitted) {
               </div>
             </div>
 
-            {formData.fareBreakdown && formData.estimatedFare !== 'Call for Quote' && (
-              <div className="bg-slate-100/50 dark:bg-slate-900/50 p-4 rounded-2xl space-y-2 border border-slate-200/50 dark:border-slate-800/50">
-                <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1">Fare Breakdown</span>
-                
-                <>
-                  {formData.fareBreakdown.distanceFare > 0 && (
-                    <div className="flex justify-between items-center text-[10px]">
-                      <div className="flex flex-col">
-                        <span className="font-bold text-slate-500 dark:text-slate-400 uppercase">Trip Fare</span>
-                        <span className="text-[8px] text-slate-400 lowercase">
-                          ({formData.fareBreakdown.billableDistance || 0} km X ₹ {formData.fareBreakdown.ratePerKm || 0})
-                        </span>
-                      </div>
-                      <span className="font-black text-slate-900 dark:text-white">₹{formData.fareBreakdown.distanceFare}</span>
-                    </div>
-                  )}
+      {formData.fareBreakdown && formData.estimatedFare !== 'Call for Quote' && (
+  <div className="bg-slate-100/50 dark:bg-slate-900/50 p-4 rounded-2xl space-y-2 border border-slate-200/50 dark:border-slate-800/50">
+    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1">
+      Fare Breakdown
+    </span>
 
-                  {formData.fareBreakdown.driverBeta > 0 && (
-                    <div className="flex justify-between items-center text-[10px]">
-                      <span className="font-bold text-slate-500 dark:text-slate-400 uppercase">Driver Allowance</span>
-                      <span className="font-black text-slate-900 dark:text-white">₹{formData.fareBreakdown.driverBeta}</span>
-                    </div>
-                  )}
+    <div className="flex justify-between items-center text-[10px]">
+      <span className="font-bold text-slate-500 dark:text-slate-400 uppercase">
+        Trip Fare
+      </span>
 
-                  {(formData.fareBreakdown.waitingCharge || 0) > 0 && (
-                    <div className="flex justify-between items-center text-[10px]">
-                      <span className="font-bold text-slate-500 dark:text-slate-400 uppercase">Waiting Charges</span>
-                      <span className="font-black text-slate-900 dark:text-white">₹{formData.fareBreakdown.waitingCharge}</span>
-                    </div>
-                  )}
+      <span className="font-black text-slate-900 dark:text-white">
+        {formData.estimatedFare}
+      </span>
+    </div>
 
-                  {formData.fareBreakdown.extraDaysFare > 0 && (
-                    <div className="flex justify-between items-center text-[10px]">
-                      <span className="font-bold text-slate-500 dark:text-slate-400 uppercase">Extra Days Fare</span>
-                      <span className="font-black text-slate-900 dark:text-white">₹{formData.fareBreakdown.extraDaysFare}</span>
-                    </div>
-                  )}
-
-                  {(formData.fareBreakdown.hillCharge || 0) > 0 && (
-                    <div className="flex justify-between items-center text-[10px]">
-                      <span className="font-bold text-slate-500 dark:text-slate-400 uppercase">Hill Charges</span>
-                      <span className="font-black text-slate-900 dark:text-white">₹{formData.fareBreakdown.hillCharge}</span>
-                    </div>
-                  )}
-
-                  {formData.fareBreakdown.baseFare > 0 && (
-                    <div className="flex justify-between items-center text-[10px]">
-                      <span className="font-bold text-slate-500 dark:text-slate-400 uppercase">Base Fare</span>
-                      <span className="font-black text-slate-900 dark:text-white">₹{formData.fareBreakdown.baseFare}</span>
-                    </div>
-                  )}
-                </>
-                
-                <div className="pt-2 border-t border-slate-200 dark:border-slate-800 mt-1">
-                  <p className="text-[8px] font-bold text-slate-400 ">Excluded: Toll, Inter-State taxes & Parking (if applicable)</p>
-                </div>
+    <div className="pt-2 border-t border-slate-200 dark:border-slate-800 mt-1">
+      <p className="text-[8px] font-bold text-slate-400">
+        Excluded: Toll, Inter-State taxes & Parking (if applicable)
+      </p>
+    </div>
               </div>
             )}
           </div>
