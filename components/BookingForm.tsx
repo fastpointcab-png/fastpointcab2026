@@ -391,7 +391,6 @@ useEffect(() => {
       componentRestrictions: { country: "in" },
       location: COIMBATORE_CENTER,
       radius: 45000,
-      types: ["geocode"],
     },
     (cbeResults: any[] = []) => {
       // 2. Search without location bias
