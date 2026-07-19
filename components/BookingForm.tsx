@@ -2606,7 +2606,7 @@ style.innerHTML = `
             <button
               type="button"
               disabled={loading}
-              className="flex-1 bg-[#FF7075] hover:bg-[#FF6467] text-slate-950 font-black py-4 rounded-2xl shadow-lg shadow-[#FF7075]/20 uppercase tracking-widest text-xs active:scale-95 transition-all"
+              className="flex-1 bg-[#FF7075] hover:bg-[#FF6467] text-white font-bold py-4 rounded-2xl shadow-lg shadow-[#FF7075]/20 uppercase tracking-widest text-xs active:scale-95 transition-all"
               onClick={() => {
                 if (!formData.vehicleType) {
                   alert("Please select a vehicle.");
@@ -2735,7 +2735,7 @@ style.innerHTML = `
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-[#FF7075] hover:bg-[#FF6467] text-slate-950 font-black py-4 rounded-2xl shadow-lg shadow-[#FF7075]/20 uppercase tracking-widest text-xs active:scale-95 transition-all flex items-center justify-center gap-2"
+                className="flex-1 bg-[#FF7075] hover:bg-[#FF6467] text-white font-bold py-4 rounded-2xl shadow-lg shadow-[#FF7075]/20 uppercase tracking-widest text-xs active:scale-95 transition-all flex items-center justify-center gap-2"
               >
                 {loading ? 'Booking...' : (
                   <>

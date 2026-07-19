@@ -23,24 +23,19 @@ export const sendBookingEmail = async (details: BookingDetails): Promise<boolean
 
   // Telegram message (clean & spaced)
 const tgMessage = encodeURIComponent(
-`🚖 *New Booking Request*
+`*New Booking Request*
 
-📱 *Phone:* ${details.phone}
+*Phone:* ${details.phone}
 
-📍 *Pickup:* [${details.pickup}](https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(details.pickup)})
-📍 *Drop:* [${details.drop}](https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(details.drop)})
+*Pickup:* [${details.pickup}](https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(details.pickup)})
+*Drop:* [${details.drop}](https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(details.drop)})
 
-🚗 *Vehicle:* ${details.vehicleType}
-
-🔁 *Trip Type:* ${details.tripType}
+*Vehicle:* ${details.vehicleType}
+*Trip Type:* ${details.tripType}
 ${details.tripType === "Local" ? ` *Package:* ${details.localPackage || "N/A"}` : ""}
-
 *Date:* ${details.date || "N/A"}
 *Time:* ${details.time || "N/A"}
-
 *Days:* ${details.numberOfDays || "1"}
-*Waiting Hours:* ${details.waitingHours || "0"}
-
 *Hill Station:* ${details.isHillStation ? "Yes (Extra Charge)" : "No"}
 
 *Distance:* ${details.distance || "N/A"}
@@ -51,7 +46,7 @@ ${details.tripType === "Local" ? ` *Package:* ${details.localPackage || "N/A"}` 
 Please contact the customer if needed.
 `
 );
-  const tgLink = `https://t.me/share/url?url=&text=${tgMessage}`;
+  const tgLink = `https://t.me/share/url?text=${tgMessage}`;
 
   // WhatsApp message
 const rawPhone = details.phone.replace(/\D/g, '');
@@ -64,17 +59,17 @@ const phoneWithCountryCode = rawPhone.startsWith('91')
 const waMessage = encodeURIComponent(
 `👋 Hi / வணக்கம்!
 
-🚖 *FastPointCab* — Your Ride Partner
+ *FastPointCab* — Your Ride Partner
 
-📍 Need a taxi anytime?
+ Need a taxi anytime?
 Just open:
-👉 https://www.fastpointcab.in/
+ https://www.fastpointcab.in/
 
-📲 Easy to book:
+ Easy to book:
 Add this website to your Home Screen.
 Next time — book in just one tap 👍
 
-🛡️ Safe • On-time • Easy Booking
+Safe • On-time • Easy Booking
 
 Whenever you need a ride,
 we are just one tap away`
