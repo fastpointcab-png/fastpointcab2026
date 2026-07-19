@@ -11,6 +11,7 @@ import { BillRequest } from './pages/BillRequest';
 import { FloatingCallButton } from './components/FloatingCallButton';
 import { MobileTabBar } from './components/MobileTabBar';
 
+
 const ScrollToTop = () => {
   const { pathname } = useLocation();
 
@@ -20,7 +21,6 @@ const ScrollToTop = () => {
 
   return null;
 };
-
 
 const App: React.FC = () => {
   const [darkMode, setDarkMode] = useState(() => {
@@ -52,6 +52,9 @@ const App: React.FC = () => {
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/bill-request" element={<BillRequest />} />
+           
+          
+
           </Routes>
         </main>
         <Footer />

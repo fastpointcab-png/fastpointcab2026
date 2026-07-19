@@ -12,8 +12,10 @@ export enum VehicleType {
 }
 
 export enum TripType {
-  ONE_WAY = 'Outstation',
-  LOCAL = 'Local'
+  LOCAL = 'Local',
+  ONE_WAY = 'One Way',
+  ROUND_TRIP = 'Round Trip',
+  RENTAL = 'Rental'
 }
 
 export interface Vehicle {
@@ -50,11 +52,20 @@ export interface FareBreakdown {
   extraCharges?: number;
 }
 
+export interface PlaceData {
+  address: string;
+  placeId?: string;
+  lat?: number;
+  lng?: number;
+}
+
 export interface BookingDetails {
   email?: string;
   phone: string;
   pickup: string;
   drop: string;
+  pickupData?: PlaceData;
+  dropData?: PlaceData;
   date?: string;
   time?: string;
   numberOfDays?: string;

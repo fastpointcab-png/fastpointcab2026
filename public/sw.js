@@ -1,10 +1,9 @@
-const CACHE_NAME = 'trustyyellowcabs-v2';
+const CACHE_NAME = "fastpointcab-v3";
+
 const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './manifest.json',
-  'https://cdn.tailwindcss.com',
-  'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap'
+  "./",
+  "./index.html",
+  "./manifest.json"
 ];
 
 // Install Event: Cache core assets

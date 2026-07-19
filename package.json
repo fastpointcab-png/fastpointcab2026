@@ -10,9 +10,12 @@
   },
   "dependencies": {
     "@google/genai": "^1.31.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "framer-motion": "^12.42.2",
     "lucide-react": "^0.555.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
+    "react-helmet-async": "^3.0.0",
     "react-router-dom": "^7.10.0"
   },
   "devDependencies": {
@@ -20,6 +23,9 @@
     "@types/react": "^19.2.13",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.0.0",
+    "autoprefixer": "^10.5.4",
+    "postcss": "^8.5.20",
+    "tailwindcss": "^4.3.3",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

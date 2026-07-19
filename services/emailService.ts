@@ -22,22 +22,35 @@ export const sendBookingEmail = async (details: BookingDetails): Promise<boolean
   });
 
   // Telegram message (clean & spaced)
-  const tgMessage = encodeURIComponent(
+const tgMessage = encodeURIComponent(
 `🚖 *New Booking Request*
 
+📱 *Phone:* ${details.phone}
 
-*Phone:* ${details.phone}
+📍 *Pickup:* [${details.pickup}](https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(details.pickup)})
+📍 *Drop:* [${details.drop}](https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(details.drop)})
 
-*Pickup:* [${details.pickup}](https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(details.pickup)})
-*Drop:* [${details.drop}](https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(details.drop)})
+🚗 *Vehicle:* ${details.vehicleType}
 
-*Vehicle:* ${details.vehicleType}
-*Fare:* ${details.estimatedFare || 'Manual Quote'}
-*Distance:* ${details.distance || 'N/A'}
+🔁 *Trip Type:* ${details.tripType}
+${details.tripType === "Local" ? ` *Package:* ${details.localPackage || "N/A"}` : ""}
+
+*Date:* ${details.date || "N/A"}
+*Time:* ${details.time || "N/A"}
+
+*Days:* ${details.numberOfDays || "1"}
+*Waiting Hours:* ${details.waitingHours || "0"}
+
+*Hill Station:* ${details.isHillStation ? "Yes (Extra Charge)" : "No"}
+
+*Distance:* ${details.distance || "N/A"}
+*Fare:* ${details.estimatedFare || "Manual Quote"}
+
 *Schedule (IST):* ${scheduleIST}
 
-Please contact the customer if needed.`
-  );
+Please contact the customer if needed.
+`
+);
   const tgLink = `https://t.me/share/url?url=&text=${tgMessage}`;
 
   // WhatsApp message
@@ -70,27 +83,42 @@ we are just one tap away`
 const waLink = `https://wa.me/${phoneWithCountryCode}?text=${waMessage}`;
 
 
- const emailContent = {
-    sender: { name: "FastPointCab Booking", email: "fastpointcab@gmail.com" },
-    to: [{ email: "fastpointcab@gmail.com", name: "FastPointCab Admin" }],
-    subject: `${details.isLead ? '[LEAD] ' : ''}Booking Request: ${details.pickup} [ Fare: ${details.estimatedFare || 'N/A'} ]`,
-    htmlContent: `
+  const isLead = details.isLead === true;
+  const subjectPrefix = isLead ? "⚠️ ABANDONED LEAD: " : " NEW BOOKING: ";
+
+  const emailContent = {
+  sender: { name: "FastPointCab Booking", email: "fastpointcab@gmail.com" },
+  to: [{ email: "fastpointcab@gmail.com", name: "FastPointCab Admin" }],
+
+  subject: `${subjectPrefix}${details.phone} - ${details.pickup} [${details.estimatedFare || 'Quote'}]`,
+
+  htmlContent: `
   <div style="font-family: sans-serif; color: #1e293b; max-width: 600px; margin: 0 auto; border: 1px solid #f1f5f9; border-radius: 12px; overflow: hidden;">
-    ${details.isLead ? `
-    <div style="background-color: #fef3c7; color: #92400e; padding: 10px; text-align: center; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">
-      ⚠️ Abandoned Lead - Non-Completed Booking
+
+    ${isLead ? `
+    <div style="background-color: #fef2f2; padding: 12px; text-align: center; border-bottom: 1px solid #fee2e2;">
+      <p style="margin: 0; color: #dc2626; font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">
+        ⚠️ System Alert: Abandoned Process
+      </p>
     </div>
-    ` : ''}
+    ` : `
+    <div style="background-color: #f0fdf4; padding: 12px; text-align: center; border-bottom: 1px solid #dcfce7;">
+      <p style="margin: 0; color: #16a34a; font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">
+        ✅ Confirmed Web Booking
+      </p>
+    </div>
+    `}
+
     <div style="padding: 30px;">
 
       <!-- Quote Box -->
       <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 25px; text-align: center;">
         <p style="margin: 0 0 10px 0; font-size: 14px; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">
-          ${details.isLead ? 'Lead Status' : 'Estimated Quote'}
+          Estimated Quote
         </p>
 
         <h2 style="margin: 0; font-size: 32px; color: #0f172a;">
-          ${details.isLead ? 'Abandoned' : (details.estimatedFare || "Calculated on call")}
+          ${details.estimatedFare || "Calculated on call"}
         </h2>
 
         <p style="margin: 5px 0 0 0; font-size: 14px; color: #0f172a;">
@@ -104,7 +132,7 @@ const waLink = `https://wa.me/${phoneWithCountryCode}?text=${waMessage}`;
         <tr>
           <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #64748b;">Customer</td>
           <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; font-weight: bold;">
-            ${details.isLead ? 'Lead Intelligence' : 'Web Booking'}
+            Web Booking
           </td>
         </tr>
 
@@ -144,14 +172,28 @@ const waLink = `https://wa.me/${phoneWithCountryCode}?text=${waMessage}`;
           </td>
         </tr>
 
-      
-        <!-- Hill Station -->
+        <!-- Trip Type -->
         <tr>
-          <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #64748b;">Hill Station</td>
+          <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #64748b;">Trip Type</td>
           <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; font-weight: bold;">
-            ${details.isHillStation ? "Yes (Extra Charge Applied)" : "No"}
+            ${details.tripType}
+            ${
+              details.tripType === "Local"
+                ? ` (Package: ${details.localPackage || "N/A"})`
+                : ""
+            }
           </td>
         </tr>
+
+        <!-- Days -->
+        <tr>
+          <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #64748b;">Days</td>
+          <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; font-weight: bold;">
+            ${details.numberOfDays || "1"}
+          </td>
+        </tr>
+
+       
 
         <!-- Schedule -->
         <tr>
@@ -184,12 +226,10 @@ const waLink = `https://wa.me/${phoneWithCountryCode}?text=${waMessage}`;
 
   </div>
 `
-  };
-
+};
   try {
     const response = await fetch(url, {
       method: 'POST',
-      keepalive: true,
       headers: {
         'accept': 'application/json',
         'api-key': apiKey,
