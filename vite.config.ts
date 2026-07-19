@@ -30,36 +30,36 @@ export default defineConfig(({ mode }) => {
       ),
     },
 
-    build: {
-      target: "es2019",
-      sourcemap: false,
-      minify: "terser",
+   build: {
+  target: "es2019",
+  sourcemap: false,
+  minify: "esbuild",
 
-      cssCodeSplit: true,
+  cssCodeSplit: true,
 
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            vendor: [
-              "react",
-              "react-dom"
-            ],
-          },
+  rollupOptions: {
+    output: {
+      manualChunks: {
+        vendor: [
+          "react",
+          "react-dom"
+        ],
+      },
 
-          assetFileNames: (assetInfo) => {
-            if (/\.(png|jpe?g|webp|svg|gif)$/i.test(assetInfo.name ?? "")) {
-              return "assets/images/[name]-[hash][extname]";
-            }
+      assetFileNames: (assetInfo) => {
+        if (/\.(png|jpe?g|webp|svg|gif)$/i.test(assetInfo.name ?? "")) {
+          return "assets/images/[name]-[hash][extname]";
+        }
 
-            if (/\.css$/i.test(assetInfo.name ?? "")) {
-              return "assets/css/[name]-[hash][extname]";
-            }
+        if (/\.css$/i.test(assetInfo.name ?? "")) {
+          return "assets/css/[name]-[hash][extname]";
+        }
 
-            return "assets/js/[name]-[hash][extname]";
-          },
-        },
+        return "assets/js/[name]-[hash][extname]";
       },
     },
+  },
+},
 
     optimizeDeps: {
       include: [
