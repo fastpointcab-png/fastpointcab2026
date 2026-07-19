@@ -42,7 +42,6 @@ Maps: https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(detai
 
 *Date:* ${details.date || "N/A"}
 *Time:* ${details.time || "N/A"}
-*Days:* ${details.numberOfDays || "1"}
 *Hill Station:* ${details.isHillStation ? "Yes (Extra Charge)" : "No"}
 
 *Distance:* ${details.distance || "N/A"}
@@ -50,7 +49,7 @@ Maps: https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(detai
 
 *Schedule (IST):* ${scheduleIST}
 
-FastPointCab Booking System`
+Trustyyellowcab Booking System`
 );
 
  const tgLink = `https://t.me/share/url?url=&text=${tgMessage}`;
@@ -66,13 +65,13 @@ const phoneWithCountryCode = rawPhone.startsWith('91')
 const waMessage = encodeURIComponent(
 `👋 Hi / வணக்கம்!
 
- *FastPointCab* — Your Ride Partner
+*FastPointCab* — Your Ride Partner
 
  Need a taxi anytime?
 Just open:
  https://www.fastpointcab.in/
 
- Easy to book:
+Easy to book:
 Add this website to your Home Screen.
 Next time — book in just one tap 👍
 
@@ -187,16 +186,7 @@ const waLink = `https://wa.me/${phoneWithCountryCode}?text=${waMessage}`;
           </td>
         </tr>
 
-        <!-- Days -->
-        <tr>
-          <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #64748b;">Days</td>
-          <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; font-weight: bold;">
-            ${details.numberOfDays || "1"}
-          </td>
-        </tr>
-
-       
-
+    
         <!-- Schedule -->
         <tr>
           <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #64748b;">Schedule (IST)</td>
