@@ -23,30 +23,37 @@ export const sendBookingEmail = async (details: BookingDetails): Promise<boolean
 
   // Telegram message (clean & spaced)
 const tgMessage = encodeURIComponent(
-`*New Booking Request*
+`*NEW BOOKING REQUEST*
+
+*Customer:* Web Booking
 
 *Phone:* ${details.phone}
 
-*Pickup:* [${details.pickup}](https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(details.pickup)})
-*Drop:* [${details.drop}](https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(details.drop)})
+*Pickup:*
+${details.pickup}
+Maps: https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(details.pickup)}
+
+*Drop:*
+${details.drop}
+Maps: https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(details.drop)}
 
 *Vehicle:* ${details.vehicleType}
-*Trip Type:* ${details.tripType}
-${details.tripType === "Local" ? ` *Package:* ${details.localPackage || "N/A"}` : ""}
+*Trip Type:* ${details.tripType}${details.tripType === "Local" ? ` (Package: ${details.localPackage || "N/A"})` : ""}
+
 *Date:* ${details.date || "N/A"}
 *Time:* ${details.time || "N/A"}
 *Days:* ${details.numberOfDays || "1"}
 *Hill Station:* ${details.isHillStation ? "Yes (Extra Charge)" : "No"}
 
 *Distance:* ${details.distance || "N/A"}
-*Fare:* ${details.estimatedFare || "Manual Quote"}
+*Estimated Fare:* ${details.estimatedFare || "Manual Quote"}
 
 *Schedule (IST):* ${scheduleIST}
 
-Please contact the customer if needed.
-`
+FastPointCab Booking System`
 );
-  const tgLink = `https://t.me/share/url?text=${tgMessage}`;
+
+ const tgLink = `https://t.me/share/url?url=&text=${tgMessage}`;
 
   // WhatsApp message
 const rawPhone = details.phone.replace(/\D/g, '');
