@@ -64,7 +64,7 @@ export const Home: React.FC = () => {
         <link rel="canonical" href="https://www.fastpointcab.in/" />
       </Helmet>
       {/* Hero Section */}
-      <section className="relative min-h-[50vh] flex items-start lg:items-center bg-white dark:bg-slate-950 overflow-hidden pt-5 pb-10 lg:py-0">
+       <section className="relative min-h-[50vh] lg:min-h-[85vh] flex items-start lg:items-center bg-white dark:bg-slate-950 overflow-hidden pt-5 pb-10 lg:py-0">
         <div className="absolute inset-0 z-0">
           <div className="absolute top-[-5%] right-[-5%] w-[600px] h-[600px] bg-brand-yellow/5 rounded-full blur-[120px]"></div>
           <div className="absolute bottom-[-10%] left-[-5%] w-[400px] h-[400px] bg-slate-50 dark:bg-slate-900/40 rounded-full blur-[100px]"></div>
