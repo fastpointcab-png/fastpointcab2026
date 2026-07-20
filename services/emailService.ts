@@ -52,7 +52,7 @@ Maps: ${cleanDrop ? `https://maps.google.com/?q=${encodeURIComponent(cleanDrop)}
 
 *Schedule (IST):* ${scheduleIST}
 
-FastPointCab Booking System`
+Trustyyellowcabs Booking System`
 );
 
  const tgLink = `https://t.me/share/url?text=${tgMessage}`;
