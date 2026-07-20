@@ -1801,9 +1801,7 @@ style.innerHTML = `
       transition-all duration-500 relative
       ${isMapActive 
         ? 'fixed inset-0 w-full max-w-full overflow-hidden md:relative md:w-full md:max-w-3xl md:min-h-[500px] pointer-events-auto bg-slate-50 dark:bg-slate-950 md:bg-white md:dark:bg-slate-900 md:p-5 md:rounded-[2.5rem] shadow-none md:shadow-2xl md:border md:border-slate-100 md:dark:border-slate-800 mx-auto flex flex-col md:flex-row gap-5 z-[80]' 
-        : isMobileScreen
-          ? 'w-full max-w-lg bg-transparent border-none shadow-none p-0 mx-auto'
-          : 'w-full max-w-sm bg-white dark:bg-slate-900 p-4 pb-6 sm:p-5 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 mx-auto'
+        : 'w-full max-w-lg md:max-w-sm bg-transparent md:bg-white md:dark:bg-slate-900 border-none md:border md:border-slate-105 md:dark:border-slate-850 shadow-none md:shadow-2xl p-0 md:p-5 pb-0 md:pb-6 rounded-none md:rounded-3xl mx-auto'
       }
     `}>
       {isMapActive && (
@@ -1849,10 +1847,10 @@ style.innerHTML = `
         className={`
           transition-all duration-300 ease-in-out
           ${isMapActive 
-            ? `fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2.5 md:relative md:bottom-auto md:left-auto md:right-auto md:z-auto md:bg-transparent md:dark:bg-transparent md:backdrop-blur-none md:p-0 md:rounded-none md:shadow-none md:border-t-0 md:h-auto md:max-h-[480px] md:flex-1 md:pr-1 pointer-events-auto
+            ? `fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2.5 md:relative md:bottom-auto md:left-auto md:right-auto md:z-auto md:bg-transparent md:dark:bg-transparent md:backdrop-blur-none md:p-0 md:rounded-none md:shadow-none md:border-t-0 md:h-[460px] md:max-h-[460px] md:flex md:flex-col md:flex-1 md:pr-1 pointer-events-auto
                ${isSheetExpanded 
-                 ? `shadow-[0_-15px_30px_rgba(0,0,0,0.15)] p-4 pb-[calc(env(safe-area-inset-bottom,16px)+16px)] rounded-t-[2rem] ${isKeyboardVisible ? 'h-[85vh] max-h-[85vh]' : 'h-[62vh] max-h-[62vh]'}` 
-                 : 'shadow-[0_-5px_15px_rgba(0,0,0,0.08)] p-3 pt-2 pb-[calc(env(safe-area-inset-bottom,16px)+8px)] rounded-t-2xl h-[72px] max-h-[72px] overflow-hidden cursor-pointer'
+                 ? `shadow-[0_-15px_30px_rgba(0,0,0,0.15)] p-4 pb-[calc(env(safe-area-inset-bottom,16px)+16px)] rounded-t-[2rem] md:shadow-none md:p-0 md:rounded-none ${isKeyboardVisible ? 'h-[85vh] max-h-[85vh] md:h-[460px] md:max-h-[460px]' : 'h-[62vh] max-h-[62vh] md:h-[460px] md:max-h-[460px]'}` 
+                 : 'shadow-[0_-5px_15px_rgba(0,0,0,0.08)] p-3 pt-2 pb-[calc(env(safe-area-inset-bottom,16px)+8px)] rounded-t-2xl h-[72px] max-h-[72px] md:h-[460px] md:max-h-[460px] md:shadow-none md:p-0 md:rounded-none overflow-hidden cursor-pointer'
                }` 
             : 'w-full flex flex-col gap-3.5'
           }
@@ -1880,8 +1878,8 @@ style.innerHTML = `
           </div>
         )}
 
-        {isMobileScreen && step === 1 && !isMapActive && (
-          <div className="flex flex-col text-left space-y-2 mb-3 select-none animate-fade-in px-1">
+        {step === 1 && !isMapActive && (
+          <div className="flex flex-col text-left space-y-2 mb-3 select-none animate-fade-in px-1 lg:hidden">
             {/* Display Headings */}
             <div className="space-y-1">
               <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white leading-[1.1] tracking-tight">
@@ -1918,23 +1916,21 @@ style.innerHTML = `
             </button>
           </div>
         ) : (
-          !(isMobileScreen && step === 1 && !isMapActive) && (
-            <div className={`flex justify-between items-center mb-1 ${isMapActive && !isSheetExpanded ? 'hidden md:flex' : ''}`}>
-              <h3 className="text-md font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                {step === 1 ? 'Enter Locations' : step === 2 ? 'Enter Mobile' : step === 3 ? 'Select Vehicle' : 'Trip Summary'}
-              </h3>
-              <div className="flex gap-1.5">
-                <div className={`h-1.5 w-4 rounded-full transition-all duration-300 ${step === 1 ? 'w-8 bg-[#FF6467]' : 'bg-slate-200 dark:bg-slate-800'}`} />
-                <div className={`h-1.5 w-4 rounded-full transition-all duration-300 ${step === 2 ? 'w-8 bg-[#FF6467]' : 'bg-slate-200 dark:bg-slate-800'}`} />
-                <div className={`h-1.5 w-4 rounded-full transition-all duration-300 ${step === 3 ? 'w-8 bg-[#FF6467]' : 'bg-slate-200 dark:bg-slate-800'}`} />
-                <div className={`h-1.5 w-4 rounded-full transition-all duration-300 ${step === 4 ? 'w-8 bg-[#FF6467]' : 'bg-slate-200 dark:bg-slate-800'}`} />
-              </div>
+          <div className={`justify-between items-center mb-1 ${isMapActive && !isSheetExpanded ? 'hidden md:flex' : 'flex'} ${step === 1 && !isMapActive ? 'hidden lg:flex' : 'flex'}`}>
+            <h3 className="text-md font-black text-slate-900 dark:text-white uppercase tracking-tight">
+              {step === 1 ? 'Enter Locations' : step === 2 ? 'Enter Mobile' : step === 3 ? 'Select Vehicle' : 'Trip Summary'}
+            </h3>
+            <div className="flex gap-1.5">
+              <div className={`h-1.5 w-4 rounded-full transition-all duration-300 ${step === 1 ? 'w-8 bg-[#FF6467]' : 'bg-slate-200 dark:bg-slate-800'}`} />
+              <div className={`h-1.5 w-4 rounded-full transition-all duration-300 ${step === 2 ? 'w-8 bg-[#FF6467]' : 'bg-slate-200 dark:bg-slate-800'}`} />
+              <div className={`h-1.5 w-4 rounded-full transition-all duration-300 ${step === 3 ? 'w-8 bg-[#FF6467]' : 'bg-slate-200 dark:bg-slate-800'}`} />
+              <div className={`h-1.5 w-4 rounded-full transition-all duration-300 ${step === 4 ? 'w-8 bg-[#FF6467]' : 'bg-slate-200 dark:bg-slate-800'}`} />
             </div>
-          )
+          </div>
         )}
 
         <form onSubmit={handleSubmit} className={`
-          ${isMapActive ? 'flex-1 flex flex-col min-h-0 justify-between gap-2.5 md:space-y-3.5 md:block' : 'space-y-3.5'}
+          ${isMapActive ? 'flex-1 flex flex-col min-h-0 justify-between gap-2.5 md:flex md:flex-col md:h-full md:space-y-0' : 'space-y-3.5'}
           ${isMapActive && !isSheetExpanded ? 'hidden md:flex' : ''}
         `}>
         {/* Step 2: Phone Number Verification / App Access */}
@@ -1954,9 +1950,8 @@ style.innerHTML = `
                 <span>Change Locations</span>
               </button>
 
-              {/* Show Date, Time, Duration card here on mobile */}
-              {isMobileScreen && (
-                <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 rounded-2xl p-2.5 px-3.5 flex items-center divide-x divide-slate-200/80 dark:divide-slate-800/80 shadow-sm gap-0.5 my-2 animate-fade-in text-left">
+              {/* Show Date, Time, Duration card here on mobile & desktop */}
+              <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 rounded-2xl p-2.5 px-3.5 flex items-center divide-x divide-slate-200/80 dark:divide-slate-800/80 shadow-sm gap-0.5 my-2 animate-fade-in text-left">
                   {/* Date Column */}
                   <div className="flex-1 flex items-center gap-1.5 min-w-0 pr-3">
                     <Calendar size={13} className="text-[#FF6467] shrink-0" />
@@ -2010,7 +2005,6 @@ style.innerHTML = `
                     </div>
                   )}
                 </div>
-              )}
 
               <div className="w-full bg-[#FF6467]/5 dark:bg-[#FF6467]/10 border-2 border-[#FF6467] focus-within:ring-4 focus-within:ring-[#FF6467]/20 rounded-xl p-2.5 px-3.5 flex items-center gap-3 transition-all shadow-md shadow-[#FF6467]/5 relative overflow-hidden text-left mt-2">
                 <span className="text-xs font-black text-[#FF6467] select-none border-r border-[#FF6467]/20 pr-2">
@@ -2060,12 +2054,7 @@ style.innerHTML = `
                   }
                   setStep(3);
                 }}
-                className={`
-                  w-full font-black py-4 uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95
-                  ${isMobileScreen 
-                    ? 'bg-brand-yellow hover:bg-[#FF6467] text-white shadow-lg shadow-brand-yellow/20 text-sm rounded-full' 
-                    : 'bg-[#FF7075] hover:bg-[#FF6467] text-white shadow-lg shadow-[#FF7075]/20 text-[10px] rounded-2xl'}
-                `}
+                className="w-full bg-[#FF7075] hover:bg-[#FF6467] text-white font-bold py-4 rounded-2xl shadow-lg shadow-[#FF7075]/20 uppercase tracking-widest text-xs active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 Let’s Choose a Vehicle <ArrowRight size={14} />
               </button>
@@ -2079,100 +2068,48 @@ style.innerHTML = `
             {/* Scrollable Body */}
             <div className={`${isMapActive ? 'flex-1 overflow-y-auto pr-1 space-y-3.5 app-scroll pb-2' : 'space-y-3.5'}`}>
           {/* Trip Type Category Selector */}
-          {isMobileScreen ? (
-            <div className="flex gap-2.5 flex-wrap pb-1 animate-fade-in select-none">
-              {[
-                { id: 'local', label: 'Book Ride' },
-                { id: 'rental', label: 'Rental' },
-                { id: 'outstation', label: 'Outstation' }
-              ].map((cat) => {
-                const isActive = 
-                  (cat.id === 'local' && formData.tripType === TripType.LOCAL) ||
-                  (cat.id === 'outstation' && (formData.tripType === TripType.ONE_WAY || formData.tripType === TripType.ROUND_TRIP)) ||
-                  (cat.id === 'rental' && formData.tripType === TripTypeRental);
-                
-                return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => {
-                      let newTripType = TripType.LOCAL;
-                      if (cat.id === 'outstation') {
-                        newTripType = TripType.ONE_WAY;
-                      } else if (cat.id === 'rental') {
-                        newTripType = TripTypeRental;
-                      }
-                      setFormData(prev => ({ 
-                        ...prev, 
-                        tripType: newTripType, 
-                        estimatedFare: '', 
-                        distance: '',
-                        localPackage: ''
-                      }));
-                    }}
-                    className={`
-                      px-5 py-2.5 rounded-full text-[11px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-sm border
-                      ${isActive 
-                        ? 'bg-brand-yellow text-white border-transparent shadow-brand-yellow/10' 
-                        : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-slate-800'}
-                    `}
-                  >
-                    {cat.label}
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="flex bg-slate-100 dark:bg-slate-800/80 p-1 rounded-2xl gap-1 relative overflow-hidden border border-slate-200/10 dark:border-slate-700/20">
-              {[
-                { id: 'local', label: 'Local' },
-                { id: 'outstation', label: 'Outstation' },
-                { id: 'rental', label: 'Rental' }
-              ].map((cat) => {
-                const isActive = 
-                  (cat.id === 'local' && formData.tripType === TripType.LOCAL) ||
-                  (cat.id === 'outstation' && (formData.tripType === TripType.ONE_WAY || formData.tripType === TripType.ROUND_TRIP)) ||
-                  (cat.id === 'rental' && formData.tripType === TripTypeRental);
-                
-                return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => {
-                      let newTripType = TripType.LOCAL;
-                      if (cat.id === 'outstation') {
-                        newTripType = TripType.ONE_WAY; // Default to One Way
-                      } else if (cat.id === 'rental') {
-                        newTripType = TripTypeRental;
-                      }
-                      setFormData(prev => ({ 
-                        ...prev, 
-                        tripType: newTripType, 
-                        estimatedFare: '', 
-                        distance: '',
-                        localPackage: ''
-                      }));
-                    }}
-                    className={`
-                      relative flex-1 flex items-center justify-center py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors duration-200 z-10
-                      ${isActive 
-                        ? 'text-slate-950' 
-                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}
-                    `}
-                  >
-                    {isActive && (
-                      <motion.div
-                        layoutId="activeCategoryType"
-                        className="absolute inset-0 bg-[#FF7075] rounded-xl shadow-md"
-                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                      />
-                    )}
-                    <span className="relative z-10">{cat.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
+          <div className="flex gap-2.5 flex-wrap pb-1 animate-fade-in select-none">
+            {[
+              { id: 'local', label: 'Book Ride' },
+              { id: 'rental', label: 'Rental' },
+              { id: 'outstation', label: 'Outstation' }
+            ].map((cat) => {
+              const isActive = 
+                (cat.id === 'local' && formData.tripType === TripType.LOCAL) ||
+                (cat.id === 'outstation' && (formData.tripType === TripType.ONE_WAY || formData.tripType === TripType.ROUND_TRIP)) ||
+                (cat.id === 'rental' && formData.tripType === TripTypeRental);
+              
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => {
+                    let newTripType = TripType.LOCAL;
+                    if (cat.id === 'outstation') {
+                      newTripType = TripType.ONE_WAY;
+                    } else if (cat.id === 'rental') {
+                      newTripType = TripTypeRental;
+                    }
+                    setFormData(prev => ({ 
+                      ...prev, 
+                      tripType: newTripType, 
+                      estimatedFare: '', 
+                      distance: '',
+                      localPackage: ''
+                    }));
+                  }}
+                  className={`
+                    px-5 py-2.5 rounded-full text-[11px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-sm border
+                    ${isActive 
+                      ? 'bg-brand-yellow text-white border-transparent shadow-brand-yellow/10' 
+                      : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-slate-800'}
+                  `}
+                >
+                  {cat.label}
+                </button>
+              );
+            })}
+          </div>
 
   
           {/* Outstation Type Sub-selector (One Way vs Round Trip Toggle Switch) */}
@@ -2212,199 +2149,84 @@ style.innerHTML = `
 
 
           {/* Unified App-Style Route Selector Card */}
-          {isMobileScreen ? (
-            <div className="space-y-3 animate-fade-in select-none">
-              {/* Pickup Location Card on Mobile */}
+          <div className="space-y-3 animate-fade-in select-none">
+            {/* Pickup Location Card */}
+            <div 
+              onClick={() => setMobileSearchType('pickup')}
+              className="relative bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-2xl p-4 flex items-center gap-3 shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer min-h-[48px]"
+            >
+              <MapPin className="text-brand-yellow shrink-0" size={18} />
+              <div className="flex-1 min-w-0 text-left">
+                <span className="block text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Pickup Location</span>
+                <div className={`text-xs font-bold line-clamp-2 break-words whitespace-normal text-left leading-snug ${formData.pickup ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500'}`}>
+                  {formData.pickup || "Enter Pickup Location"}
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                {locatingPickup && (
+                  <div className="w-5 h-5 border-2 border-brand-yellow border-t-transparent rounded-full animate-spin" />
+                )}
+                {!locatingPickup && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDesktopUseGPS();
+                    }}
+                    className="w-7 h-7 bg-brand-yellow text-white hover:bg-[#FF6467] rounded-full flex items-center justify-center transition-all shadow-md active:scale-90 cursor-pointer"
+                    title="Use current GPS location"
+                  >
+                    <Locate size={13} className="stroke-[3px]" />
+                  </button>
+                )}
+                {formData.pickup && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setFormData(prev => ({ ...prev, pickup: '', pickupData: undefined }));
+                      if (pickupRef.current) pickupRef.current.value = '';
+                    }}
+                    className="w-7 h-7 bg-slate-200/60 dark:bg-slate-800 text-slate-500 rounded-full flex items-center justify-center transition-all cursor-pointer"
+                  >
+                    <X size={12} className="stroke-[3px]" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {formData.tripType !== TripTypeRental && (
+              /* Destination Card */
               <div 
-                onClick={() => setMobileSearchType('pickup')}
+                onClick={() => setMobileSearchType('drop')}
                 className="relative bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-2xl p-4 flex items-center gap-3 shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer min-h-[48px]"
               >
-                <MapPin className="text-brand-yellow shrink-0" size={18} />
+                <div className="w-4.5 h-4.5 rounded-full border-2 border-rose-500 flex items-center justify-center shrink-0">
+                  <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                </div>
                 <div className="flex-1 min-w-0 text-left">
-                  <span className="block text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Pickup Location</span>
-                  <div className={`text-xs font-bold line-clamp-2 break-words whitespace-normal text-left leading-snug ${formData.pickup ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500'}`}>
-                    {formData.pickup || "Enter Pickup Location"}
+                  <span className="block text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Destination</span>
+                  <div className={`text-xs font-bold line-clamp-2 break-words whitespace-normal text-left leading-snug ${formData.drop ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500'}`}>
+                    {formData.drop || "Enter Destination"}
                   </div>
                 </div>
-                
-                <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
-                  {locatingPickup && (
-                    <div className="w-5 h-5 border-2 border-brand-yellow border-t-transparent rounded-full animate-spin" />
-                  )}
-                  {!locatingPickup && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDesktopUseGPS();
-                      }}
-                      className="w-7 h-7 bg-brand-yellow text-white hover:bg-[#FF6467] rounded-full flex items-center justify-center transition-all shadow-md active:scale-90 cursor-pointer"
-                      title="Use current GPS location"
-                    >
-                      <Locate size={13} className="stroke-[3px]" />
-                    </button>
-                  )}
-                  {formData.pickup && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setFormData(prev => ({ ...prev, pickup: '', pickupData: undefined }));
-                        if (pickupRef.current) pickupRef.current.value = '';
-                      }}
-                      className="w-7 h-7 bg-slate-200/60 dark:bg-slate-800 text-slate-500 rounded-full flex items-center justify-center transition-all cursor-pointer"
-                    >
-                      <X size={12} className="stroke-[3px]" />
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {formData.tripType !== TripTypeRental && (
-                /* Destination Card on Mobile */
-                <div 
-                  onClick={() => setMobileSearchType('drop')}
-                  className="relative bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-2xl p-4 flex items-center gap-3 shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer min-h-[48px]"
-                >
-                  <div className="w-4.5 h-4.5 rounded-full border-2 border-rose-500 flex items-center justify-center shrink-0">
-                    <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                  </div>
-                  <div className="flex-1 min-w-0 text-left">
-                    <span className="block text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Destination</span>
-                    <div className={`text-xs font-bold line-clamp-2 break-words whitespace-normal text-left leading-snug ${formData.drop ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500'}`}>
-                      {formData.drop || "Enter Destination"}
-                    </div>
-                  </div>
-                  {formData.drop && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setFormData(prev => ({ ...prev, drop: '' }));
-                        if (dropRef.current) dropRef.current.value = '';
-                      }}
-                      className="w-7 h-7 bg-slate-200/60 dark:bg-slate-800 text-slate-500 rounded-full flex items-center justify-center transition-all cursor-pointer"
-                    >
-                      <X size={12} className="stroke-[3px]" />
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="relative bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-850 rounded-2xl p-3 flex gap-3 shadow-sm">
-              {/* Visual native-app line connector */}
-              <div className="flex flex-col items-center justify-center py-1.5">
-                {/* Pickup Dot */}
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-500/10 flex-shrink-0" />
-                
-                {formData.tripType !== TripTypeRental && (
-                  <>
-                    {/* Connecting line */}
-                    <div className="w-0.5 bg-slate-200 dark:bg-slate-800 flex-1 my-1.5 min-h-[14px] border-l border-dashed border-slate-300 dark:border-slate-700" />
-                    
-                    {/* Drop Dot */}
-                    <div className="w-2.5 h-2.5 rounded-full bg-rose-500 ring-4 ring-rose-500/10 flex-shrink-0" />
-                  </>
+                {formData.drop && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setFormData(prev => ({ ...prev, drop: '' }));
+                      if (dropRef.current) dropRef.current.value = '';
+                    }}
+                    className="w-7 h-7 bg-slate-200/60 dark:bg-slate-800 text-slate-500 rounded-full flex items-center justify-center transition-all cursor-pointer"
+                  >
+                    <X size={12} className="stroke-[3px]" />
+                  </button>
                 )}
               </div>
-
-              {/* Input fields */}
-              <div className="flex-1 space-y-2">
-                {/* Pickup input */}
-                <div className="relative">
-                  <span className="block text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Pickup Location</span>
-                  <input
-                    ref={pickupRef}
-                    type="text"
-                    readOnly={window.innerWidth < 640}
-                    onClick={() => {
-                      if (window.innerWidth < 640) setMobileSearchType('pickup');
-                    }}
-                    onFocus={() => {
-                      if (window.innerWidth < 640) setMobileSearchType('pickup');
-                    }}
-                    required
-                    placeholder="Enter Pickup Location"
-                    value={formData.pickup}
-                    onChange={(e) => setFormData(prev => ({ ...prev, pickup: e.target.value }))}
-                    className="w-full bg-transparent border-none p-0 focus:ring-0 text-xs font-bold outline-none dark:text-white placeholder-slate-400 pr-16"
-                  />
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1.5 z-10">
-                    {locatingPickup && (
-                      <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin shrink-0" />
-                    )}
-                    {!locatingPickup && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDesktopUseGPS();
-                        }}
-                        className="w-6 h-6 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full flex items-center justify-center transition-all shadow-md hover:scale-110 active:scale-95 cursor-pointer animate-fade-in"
-                        title="Use current GPS location (99% accuracy)"
-                      >
-                        <Locate size={12} className="stroke-[3px]" />
-                      </button>
-                    )}
-                    {formData.pickup && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setFormData(prev => ({ ...prev, pickup: '', pickupData: undefined }));
-                          if (pickupRef.current) pickupRef.current.value = '';
-                        }}
-                        className="w-6 h-6 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-[#FF6467] rounded-full flex items-center justify-center transition-all shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer"
-                        title="Clear pickup"
-                      >
-                        <X size={12} className="stroke-[3px]" />
-                      </button>
-                    )}
-                  </div>
-                  {gpsErrorPickup && (
-                    <p className="text-[9px] text-rose-500 font-bold mt-1 uppercase tracking-wide leading-tight animate-fade-in">
-                      {gpsErrorPickup}
-                    </p>
-                  )}
-                </div>
-
-                {formData.tripType !== TripTypeRental && (
-                  <div className="pt-2 border-t border-slate-200/50 dark:border-slate-800/80 relative">
-                    <span className="block text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Destination</span>
-                    <input
-                      ref={dropRef}
-                      type="text"
-                      readOnly={window.innerWidth < 640}
-                      onClick={() => {
-                        if (window.innerWidth < 640) setMobileSearchType('drop');
-                      }}
-                      onFocus={() => {
-                        if (window.innerWidth < 640) setMobileSearchType('drop');
-                      }}
-                      required={formData.tripType !== TripTypeRental}
-                      placeholder="Enter Destination"
-                      value={formData.drop}
-                      onChange={(e) => setFormData(prev => ({ ...prev, drop: e.target.value }))}
-                      className="w-full bg-transparent border-none p-0 focus:ring-0 text-xs font-bold outline-none dark:text-white placeholder-slate-400 pr-8"
-                    />
-                    {formData.drop && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setFormData(prev => ({ ...prev, drop: '' }));
-                        }}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-[#FF6467] rounded-full flex items-center justify-center transition-all shadow-sm border border-slate-200 dark:border-slate-700"
-                        title="Clear destination"
-                      >
-                        <X size={12} className="stroke-[3px]" />
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Local Package Select */}
           {formData.tripType === TripTypeRental && (
@@ -2436,62 +2258,6 @@ style.innerHTML = `
               -webkit-appearance: none;
             }
           `}</style>
-          {!isMobileScreen && (
-            <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 rounded-2xl p-2.5 px-3.5 flex items-center divide-x divide-slate-200/80 dark:divide-slate-800/80 shadow-sm gap-0.5">
-              {/* Date Column */}
-              <div className="flex-1 flex items-center gap-1.5 min-w-0 pr-3">
-                <Calendar size={13} className="text-[#FF6467] shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <span className="block text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5 truncate">Date</span>
-                  <input
-                    type="date"
-                    name="date"
-                    min={indiaToday}
-                    value={formData.date}
-                    onChange={handleChange}
-                    className="w-full bg-transparent border-none p-0 focus:ring-0 text-[11px] sm:text-xs font-bold outline-none dark:text-white cursor-pointer min-w-0"
-                  />
-                </div>
-              </div>
-
-              {/* Time Column */}
-              <div className={`flex-1 flex items-center gap-1.5 min-w-0 px-3 ${formData.tripType === TripType.ROUND_TRIP ? 'pr-3' : ''}`}>
-                <Clock size={13} className="text-[#FF6467] shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <span className="block text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5 truncate">Time</span>
-                  <input
-                    type="time"
-                    name="time"
-                    value={formData.time}
-                    onChange={handleChange}
-                    className="w-full bg-transparent border-none p-0 focus:ring-0 text-[11px] sm:text-xs font-bold outline-none dark:text-white cursor-pointer min-w-0"
-                  />
-                </div>
-              </div>
-
-              {/* Duration (Round Trip only) */}
-              {formData.tripType === TripType.ROUND_TRIP && (
-                <div className="flex-1 flex items-center gap-1.5 min-w-0 pl-3">
-                  <Clock size={13} className="text-[#FF6467] shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <span className="block text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5 truncate">Duration</span>
-                    <select
-                      name="numberOfDays"
-                      value={formData.numberOfDays}
-                      onChange={handleChange}
-                      className="w-full bg-transparent border-none p-0 focus:ring-0 text-[11px] sm:text-xs font-bold outline-none dark:text-white appearance-none cursor-pointer min-w-0"
-                    >
-                      {[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].map(n => (
-                        <option key={n} value={n.toString()}>
-                          {n === 1 ? 'Same Day' : `${n} Days`}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
 
             </div>
 
@@ -2501,14 +2267,9 @@ style.innerHTML = `
                 type="button" 
                 id="btn-next-step"
                 onClick={handleNextStep} 
-                className={`
-                  w-full font-black py-4 rounded-full uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95
-                  ${isMobileScreen 
-                    ? 'bg-brand-yellow hover:bg-[#FF6467] text-white shadow-lg shadow-brand-yellow/20 text-sm' 
-                    : 'bg-[#FF7075] hover:bg-[#FF6467] text-white shadow-lg shadow-[#FF7075]/20 text-xs rounded-2xl'}
-                `}
+                className="w-full bg-[#FF7075] hover:bg-[#FF6467] text-white font-bold py-4 rounded-2xl shadow-lg shadow-[#FF7075]/20 uppercase tracking-widest text-xs active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                {isMobileScreen ? 'Get a Ride in Minutes' : <>Continue <ArrowRight size={18} /></>}
+                Continue <ArrowRight size={18} />
               </button>
             </div>
           </div>
