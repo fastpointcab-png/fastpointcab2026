@@ -4,34 +4,54 @@ export const sendBookingEmail = async (details: BookingDetails): Promise<boolean
   const apiKey = import.meta.env.VITE_BREVO_API_KEY;
 
   if (!apiKey) {
-    console.error("API configuration is missing. Please ensure the environment is correctly set up.");
+    console.error("API configuration is missing. Brevo API key is not set.");
     return false;
   }
 
   const url = "https://api.brevo.com/v3/smtp/email";
 
-  // Format schedule in 12-hour IST
-  const scheduleIST = new Date(details.date + ' ' + details.time).toLocaleString('en-IN', {
-    timeZone: 'Asia/Kolkata',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  });
+  // Safely format schedule in 12-hour IST
+  let scheduleIST = "N/A";
+  try {
+    if (details.date && details.time) {
+      const parsedDate = new Date(`${details.date} ${details.time}`);
+      if (!isNaN(parsedDate.getTime())) {
+        scheduleIST = parsedDate.toLocaleString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        });
+      } else {
+        scheduleIST = `${details.date} ${details.time}`;
+      }
+    } else if (details.date) {
+      scheduleIST = details.date;
+    }
+  } catch (e) {
+    scheduleIST = `${details.date || ''} ${details.time || ''}`.trim() || 'N/A';
+  }
+
+  const phone = details.phone || 'N/A';
+  const pickup = details.pickup || 'Not Provided';
+  const drop = details.drop || 'Not Provided';
+  const vehicleType = details.vehicleType || 'Not Selected';
+  const tripType = details.tripType || 'Local';
 
   // Clean up addresses for safe URL sharing (replaces '&' with 'and' and '#' with 'No. ' to prevent parameter truncation in Telegram)
-  const cleanPickup = (details.pickup || '').replace(/&/g, 'and').replace(/#/g, 'No. ');
-  const cleanDrop = (details.drop || '').replace(/&/g, 'and').replace(/#/g, 'No. ');
+  const cleanPickup = pickup.replace(/&/g, 'and').replace(/#/g, 'No. ');
+  const cleanDrop = drop.replace(/&/g, 'and').replace(/#/g, 'No. ');
 
   // Telegram message (clean & spaced)
-const tgMessage = encodeURIComponent(
+  const tgMessage = encodeURIComponent(
 `*NEW BOOKING REQUEST*
 
 *Customer:* Web Booking
 
-*Phone:* ${details.phone}
+*Phone:* ${phone}
 
 *Pickup:*
 ${cleanPickup}
@@ -39,10 +59,10 @@ Maps: https://maps.google.com/?q=${encodeURIComponent(cleanPickup)}
 
 *Drop:*
 ${cleanDrop}
-Maps: ${cleanDrop ? `https://maps.google.com/?q=${encodeURIComponent(cleanDrop)}` : "N/A"}
+Maps: ${details.drop ? `https://maps.google.com/?q=${encodeURIComponent(cleanDrop)}` : "N/A"}
 
-*Vehicle:* ${details.vehicleType}
-*Trip Type:* ${details.tripType}${details.tripType === "Local" ? ` (Package: ${details.localPackage || "N/A"})` : ""}
+*Vehicle:* ${vehicleType}
+*Trip Type:* ${tripType}${tripType === "Local" ? ` (Package: ${details.localPackage || "N/A"})` : ""}
 
 *Date:* ${details.date || "N/A"}
 *Time:* ${details.time || "N/A"}
@@ -53,19 +73,19 @@ Maps: ${cleanDrop ? `https://maps.google.com/?q=${encodeURIComponent(cleanDrop)}
 *Schedule (IST):* ${scheduleIST}
 
 Trustyyellowcabs Booking System`
-);
+  );
 
- const tgLink = `https://t.me/share/url?text=${tgMessage}`;
+  const tgLink = `https://t.me/share/url?text=${tgMessage}`;
 
   // WhatsApp message
-const rawPhone = details.phone.replace(/\D/g, '');
+  const rawPhone = phone.replace(/\D/g, '');
 
-// Ensure India country code
-const phoneWithCountryCode = rawPhone.startsWith('91')
-  ? rawPhone
-  : `91${rawPhone}`;
+  // Ensure India country code
+  const phoneWithCountryCode = rawPhone.startsWith('91')
+    ? rawPhone
+    : `91${rawPhone}`;
 
-const waMessage = encodeURIComponent(
+  const waMessage = encodeURIComponent(
 `👋 Hi / வணக்கம்!
 
 *FastPointCab* — Your Ride Partner
@@ -82,21 +102,20 @@ Safe • On-time • Easy Booking
 
 Whenever you need a ride,
 we are just one tap away`
-);
+  );
 
-const waLink = `https://wa.me/${phoneWithCountryCode}?text=${waMessage}`;
-
+  const waLink = `https://wa.me/${phoneWithCountryCode}?text=${waMessage}`;
 
   const isLead = details.isLead === true;
   const subjectPrefix = isLead ? "⚠️ ABANDONED LEAD: " : " NEW BOOKING: ";
 
   const emailContent = {
-  sender: { name: "FastPointCab Booking", email: "fastpointcab@gmail.com" },
-  to: [{ email: "fastpointcab@gmail.com", name: "FastPointCab Admin" }],
+    sender: { name: "FastPointCab Booking", email: "fastpointcab@gmail.com" },
+    to: [{ email: "fastpointcab@gmail.com", name: "FastPointCab Admin" }],
 
-  subject: `${subjectPrefix}${details.phone} - ${details.pickup} [${details.estimatedFare || 'Quote'}]`,
+    subject: `${subjectPrefix}${phone} - ${pickup} [${details.estimatedFare || 'Quote'}]`,
 
-  htmlContent: `
+    htmlContent: `
   <div style="font-family: sans-serif; color: #1e293b; max-width: 600px; margin: 0 auto; border: 1px solid #f1f5f9; border-radius: 12px; overflow: hidden;">
 
     ${isLead ? `
@@ -144,7 +163,7 @@ const waLink = `https://wa.me/${phoneWithCountryCode}?text=${waMessage}`;
         <tr>
           <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #64748b;">Phone</td>
           <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; font-weight: bold;">
-            <a href="tel:${details.phone}">${details.phone}</a>
+            <a href="tel:${phone}">${phone}</a>
           </td>
         </tr>
 
@@ -152,8 +171,8 @@ const waLink = `https://wa.me/${phoneWithCountryCode}?text=${waMessage}`;
         <tr>
           <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #64748b;">Pickup</td>
           <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; font-weight: bold;">
-            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(details.pickup)}" target="_blank">
-              ${details.pickup}
+            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pickup)}" target="_blank">
+              ${pickup}
             </a>
           </td>
         </tr>
@@ -162,8 +181,8 @@ const waLink = `https://wa.me/${phoneWithCountryCode}?text=${waMessage}`;
         <tr>
           <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #64748b;">Drop</td>
           <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; font-weight: bold;">
-            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(details.drop)}" target="_blank">
-              ${details.drop}
+            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(drop)}" target="_blank">
+              ${drop}
             </a>
           </td>
         </tr>
@@ -172,7 +191,7 @@ const waLink = `https://wa.me/${phoneWithCountryCode}?text=${waMessage}`;
         <tr>
           <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #64748b;">Vehicle Type</td>
           <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; font-weight: bold;">
-            ${details.vehicleType}
+            ${vehicleType}
           </td>
         </tr>
 
@@ -180,16 +199,15 @@ const waLink = `https://wa.me/${phoneWithCountryCode}?text=${waMessage}`;
         <tr>
           <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #64748b;">Trip Type</td>
           <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; font-weight: bold;">
-            ${details.tripType}
+            ${tripType}
             ${
-              details.tripType === "Local"
+              tripType === "Local"
                 ? ` (Package: ${details.localPackage || "N/A"})`
                 : ""
             }
           </td>
         </tr>
 
-    
         <!-- Schedule -->
         <tr>
           <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; color: #64748b;">Schedule (IST)</td>
@@ -221,21 +239,42 @@ const waLink = `https://wa.me/${phoneWithCountryCode}?text=${waMessage}`;
 
   </div>
 `
-};
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'accept': 'application/json',
-        'api-key': apiKey,
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify(emailContent)
-    });
+  };
 
-    return response.ok;
-  } catch (error) {
-    console.error("Network error during booking processing:", error);
-    return false;
+  // Execute request with retry mechanism (up to 2 retries) and keepalive: true
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        keepalive: true, // CRITICAL: Guarantees fetch request completes during page unload/tab switch
+        headers: {
+          'accept': 'application/json',
+          'api-key': apiKey,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify(emailContent)
+      });
+
+      if (response.ok) {
+        return true;
+      }
+
+      const errorText = await response.text();
+      console.error(`Brevo Email API attempt ${attempt} failed with status ${response.status}:`, errorText);
+
+      // If client error like 400 or 401, don't retry
+      if (response.status >= 400 && response.status < 500 && response.status !== 429) {
+        break;
+      }
+    } catch (error) {
+      console.error(`Network error sending email (attempt ${attempt}/${maxAttempts}):`, error);
+    }
+
+    if (attempt < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+    }
   }
+
+  return false;
 };

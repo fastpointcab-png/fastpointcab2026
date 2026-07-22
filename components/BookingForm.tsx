@@ -1604,15 +1604,13 @@ style.innerHTML = `
       
       console.log('Capturing abandoned lead...', bookingData.phone);
       
-      // Send Email
-      sendBookingEmail(bookingData);
-      
-      // Save to Google Sheets
-      try {
-        await appendBookingToSheet(bookingData);
-      } catch (err) {
-        console.error('Abandonment sheet sync error:', err);
-      }
+      // Send Email and Save to Google Sheets in parallel
+      Promise.allSettled([
+        sendBookingEmail(bookingData),
+        appendBookingToSheet(bookingData)
+      ]).catch(err => {
+        console.error('Abandonment sync error:', err);
+      });
     }
   }, []);
 
@@ -1651,24 +1649,24 @@ style.innerHTML = `
     leadSentRef.current = true; // Prevent abandonment lead during/after this process
 
     try {
-      // Send Email
-      const success = await sendBookingEmail(formData);
-      
-      // Save to Google Sheets
-      try {
-        await appendBookingToSheet(formData);
-      } catch (err) {
-        console.error('Sheet sync error:', err);
-      }
-      
-      if (success) {
+      // Send Email and Save to Google Sheets in parallel
+      const [emailResult, sheetResult] = await Promise.allSettled([
+        sendBookingEmail(formData),
+        appendBookingToSheet(formData)
+      ]);
+
+      const isEmailSuccess = emailResult.status === 'fulfilled' && emailResult.value === true;
+      const isSheetSuccess = sheetResult.status === 'fulfilled';
+
+      // Consider successful if either email OR sheet succeeds
+      if (isEmailSuccess || isSheetSuccess) {
         submittedRef.current = true;
         setSubmitted(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         isSubmittingRef.current = false;
         leadSentRef.current = false; // Allow retry or abandonment capture on failure
-        alert("Booking failed. Please try again.");
+        alert("Booking submission failed. Please try again.");
       }
     } catch (err) {
       console.error(err);
