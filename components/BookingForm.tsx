@@ -1699,7 +1699,7 @@ const handleWhatsAppConfirm = () => {
     `%0A${tripDetails}` +
     `%0A${dateTimeStr}` +
     `%0A*Vehicle:* ${formData.vehicleType}` +
-    `%0A*Fare:* ${formData.estimatedFare}`;
+    `%0A*Estimated Fare:* ${formData.estimatedFare}`;
 
   window.open(`https://wa.me/919488834020?text=${message}`, '_blank');
 };
