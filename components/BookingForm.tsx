@@ -1682,21 +1682,27 @@ style.innerHTML = `
       setLoading(false);
     }
   };
-  const handleWhatsAppConfirm = () => {
-  const tripDetails = formData.tripType === TripTypeRental 
+const handleWhatsAppConfirm = () => {
+  const tripDetails = formData.tripType === TripTypeRental
     ? `*Package:* ${LOCAL_PACKAGES.find(p => p.id === formData.localPackage)?.label}`
     : `*Drop:* ${formData.drop}${formData.tripType === TripType.ROUND_TRIP ? `%0A*Days:* ${formData.numberOfDays}` : ''}`;
-  
-  const dateTimeStr = (formData.date || formData.time) 
+
+  const dateTimeStr = (formData.date || formData.time)
     ? `*Date/Time:* ${formData.date || 'Not specified'} at ${formData.time || 'Not specified'}`
     : '*Date/Time:* Not specified';
 
-  const hillStr = formData.isHillStation ? '%0A*Hill Station Charge:* Applied (₹300)' : '';
+  const message =
+    `*NEW BOOKING CONFIRMATION*` +
+    `%0A*Trip Type:* ${formData.tripType}` +
+    `%0A*Phone:* ${formData.phone}` +
+    `%0A*Pickup:* ${formData.pickup}` +
+    `%0A${tripDetails}` +
+    `%0A${dateTimeStr}` +
+    `%0A*Vehicle:* ${formData.vehicleType}` +
+    `%0A*Fare:* ${formData.estimatedFare}`;
 
-  const message = `*NEW BOOKING CONFIRMATION*%0A*Trip Type:* ${formData.tripType}%0A*Phone:* ${formData.phone}%0A*Pickup:* ${formData.pickup}%0A${tripDetails}%0A${dateTimeStr}${hillStr}%0A*Vehicle:* ${formData.vehicleType}%0A*Fare:* ${formData.estimatedFare}`;
   window.open(`https://wa.me/919488834020?text=${message}`, '_blank');
 };
-
 
   const isMapActive = !!(
     !submitted &&
