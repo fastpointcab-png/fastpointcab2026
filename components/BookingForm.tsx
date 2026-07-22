@@ -898,22 +898,52 @@ export const BookingForm: React.FC = () => {
   };
   const tomorrowStr = getTomorrowDate();
 
-  const [formData, setFormData] = useState<BookingDetails>({
-    phone: '',
-    pickup: '',
-    drop: '',
-    date: '',
-    time: '',
-    numberOfDays: '1',
-    waitingHours: '0',
-    vehicleType: VehicleType.MINI,
-    tripType: TripType.LOCAL,
-    localPackage: '',
-    isHillStation: false,
-    distance: '',
-    rawDistance: 0,
-    estimatedFare: '',
-  });
+  const getInitialFormData = (): BookingDetails => {
+    try {
+      const saved = localStorage.getItem('fastpointcab_booking_draft');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && (parsed.phone || parsed.pickup || parsed.drop)) {
+          return {
+            phone: parsed.phone || '',
+            pickup: parsed.pickup || '',
+            drop: parsed.drop || '',
+            date: parsed.date || indiaToday,
+            time: parsed.time || '',
+            numberOfDays: parsed.numberOfDays || '1',
+            waitingHours: parsed.waitingHours || '0',
+            vehicleType: parsed.vehicleType || VehicleType.MINI,
+            tripType: parsed.tripType || TripType.LOCAL,
+            localPackage: parsed.localPackage || '',
+            isHillStation: !!parsed.isHillStation,
+            distance: parsed.distance || '',
+            rawDistance: parsed.rawDistance || 0,
+            estimatedFare: parsed.estimatedFare || '',
+          };
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+    return {
+      phone: '',
+      pickup: '',
+      drop: '',
+      date: indiaToday,
+      time: '',
+      numberOfDays: '1',
+      waitingHours: '0',
+      vehicleType: VehicleType.MINI,
+      tripType: TripType.LOCAL,
+      localPackage: '',
+      isHillStation: false,
+      distance: '',
+      rawDistance: 0,
+      estimatedFare: '',
+    };
+  };
+
+  const [formData, setFormData] = useState<BookingDetails>(getInitialFormData);
 
   const [mobileSearchType, setMobileSearchType] = useState<null | 'pickup' | 'drop'>(null);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
@@ -1573,45 +1603,71 @@ style.innerHTML = `
   const formDataRef = useRef(formData);
   useEffect(() => {
     formDataRef.current = formData;
+    if (!submittedRef.current && (formData.phone || formData.pickup || formData.drop)) {
+      try {
+        localStorage.setItem('fastpointcab_booking_draft', JSON.stringify(formData));
+      } catch (e) {
+        // ignore storage errors
+      }
+    }
   }, [formData]);
 
   // Abandoned Lead Capture Logic
   const leadSentRef = useRef(false);
   const submittedRef = useRef(false);
+  useEffect(() => {
+    submittedRef.current = submitted;
+  }, [submitted]);
 
-  const handleAbandonment = useCallback(async () => {
+  const lastSentSignatureRef = useRef<string>('');
+
+  const handleAbandonment = useCallback(() => {
     const currentFormData = formDataRef.current;
     const currentSubmitted = submittedRef.current;
     const currentStep = stepRef.current;
 
-    // Only send if we have basic info, not submitted, not currently submitting, and haven't sent yet
-    if (
-      !currentSubmitted && 
-      !isSubmittingRef.current && 
-      !leadSentRef.current && 
-      currentFormData.phone && 
-      currentFormData.phone.length === 10 && 
-      (currentFormData.pickup || currentFormData.drop)
-    ) {
-      const bookingData = {
-        ...currentFormData,
-        isLead: true,
-        estimatedFare: currentFormData.estimatedFare || (currentStep >= 2 ? 'Abandoned at Vehicle/Summary Select' : 'Abandoned Lead (Step 1)')
-      };
-      
-      // ⚠️ Mark as sent synchronously BEFORE async calls to prevent duplicate triggers
-      leadSentRef.current = true;
-      
-      console.log('Capturing abandoned lead...', bookingData.phone);
-      
-      // Send Email and Save to Google Sheets in parallel
-      Promise.allSettled([
-        sendBookingEmail(bookingData),
-        appendBookingToSheet(bookingData)
-      ]).catch(err => {
-        console.error('Abandonment sync error:', err);
-      });
+    // Do not capture if already successfully submitted or currently submitting
+    if (currentSubmitted || isSubmittingRef.current) {
+      return;
     }
+
+    const rawPhone = (currentFormData.phone || '').replace(/\D/g, '');
+    const cleanPhone = rawPhone.length >= 10 ? rawPhone.slice(-10) : rawPhone;
+    const hasValidPhone = cleanPhone.length === 10;
+    const hasLocation = !!(currentFormData.pickup || currentFormData.drop);
+
+    // Require at least 10-digit phone number OR location details
+    if (!hasValidPhone && !hasLocation) {
+      return;
+    }
+
+    // Build signature to prevent sending duplicate identical emails
+    const signature = `${cleanPhone}_${currentFormData.pickup}_${currentFormData.drop}_${currentFormData.vehicleType}_${currentFormData.tripType}_${currentFormData.date}_${currentFormData.time}_step${currentStep}`;
+
+    if (signature === lastSentSignatureRef.current) {
+      return;
+    }
+
+    // Save signature immediately to prevent duplicate requests
+    lastSentSignatureRef.current = signature;
+    leadSentRef.current = true;
+
+    const bookingData: BookingDetails = {
+      ...currentFormData,
+      phone: hasValidPhone ? cleanPhone : (currentFormData.phone || 'Not Provided'),
+      isLead: true,
+      estimatedFare: currentFormData.estimatedFare || (currentStep >= 2 ? 'Abandoned at Vehicle/Summary Step' : 'Abandoned Lead (Step 1)')
+    };
+
+    console.log('Capturing abandoned lead...', bookingData.phone, bookingData.pickup);
+
+    // Send email and sheet update in parallel using keepalive
+    Promise.allSettled([
+      sendBookingEmail(bookingData),
+      appendBookingToSheet(bookingData)
+    ]).catch(err => {
+      console.error('Abandonment sync error:', err);
+    });
   }, []);
 
   useEffect(() => {
@@ -1621,15 +1677,18 @@ style.innerHTML = `
       }
     };
 
-    // iOS Safari reliability: pagehide
+    // Listen to unload, beforeunload, pagehide, visibilitychange
     window.addEventListener('pagehide', handleAbandonment);
     window.addEventListener('beforeunload', handleAbandonment);
+    window.addEventListener('unload', handleAbandonment);
     document.addEventListener('visibilitychange', onVisibilityChange);
 
     return () => {
       window.removeEventListener('pagehide', handleAbandonment);
       window.removeEventListener('beforeunload', handleAbandonment);
+      window.removeEventListener('unload', handleAbandonment);
       document.removeEventListener('visibilitychange', onVisibilityChange);
+      // Fires on component unmount (e.g. user navigates to another page on the same site)
       handleAbandonment();
     };
   }, [handleAbandonment]);
@@ -1646,7 +1705,7 @@ style.innerHTML = `
 
     setLoading(true);
     isSubmittingRef.current = true;
-    leadSentRef.current = true; // Prevent abandonment lead during/after this process
+    leadSentRef.current = true;
 
     try {
       // Send Email and Save to Google Sheets in parallel
@@ -1662,10 +1721,13 @@ style.innerHTML = `
       if (isEmailSuccess || isSheetSuccess) {
         submittedRef.current = true;
         setSubmitted(true);
+        try {
+          localStorage.removeItem('fastpointcab_booking_draft');
+        } catch (e) {}
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         isSubmittingRef.current = false;
-        leadSentRef.current = false; // Allow retry or abandonment capture on failure
+        leadSentRef.current = false;
         alert("Booking submission failed. Please try again.");
       }
     } catch (err) {
