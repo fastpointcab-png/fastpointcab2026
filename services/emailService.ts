@@ -94,6 +94,7 @@ Customer Support
 ━━━━━━━━━━━━
 +91 94888 34020
 +91 88700 88020
++91 422-3596446
 ━━━━━━━━━━━━
 
 Book your next ride instantly:
@@ -101,7 +102,7 @@ www.trustyyellowcabs.in
 
 Need assistance? Call us anytime.
 
-⚠️ Direct booking only. Please avoid driver contact`
+⚠️ Book direct. Avoid driver contact !`
 );
 
   const waLink = `https://wa.me/${phoneWithCountryCode}?text=${waMessage}`;
