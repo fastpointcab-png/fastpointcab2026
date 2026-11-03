@@ -71,7 +71,7 @@ Trustyyellowcabs Booking System`
   // Telegram's HTTPS share endpoint requires both a URL and an optional text value.
   // URLSearchParams keeps the full booking message safely encoded for iOS and email clients.
 const telegramShareUrl = new URL('https://t.me/share/url');
-telegramShareUrl.searchParams.set('url', 'https://t.me/share/url');
+telegramShareUrl.searchParams.set('url', 'https://t.me/+pek2M40tUVkzMzQ1');
 telegramShareUrl.searchParams.set('text', tgRawMessage);
 const tgLink = telegramShareUrl.toString().replace(/&/g, '&amp;');
 
