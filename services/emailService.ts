@@ -70,10 +70,10 @@ Trustyyellowcabs Booking System`
 
   // Telegram's HTTPS share endpoint requires both a URL and an optional text value.
   // URLSearchParams keeps the full booking message safely encoded for iOS and email clients.
-  const telegramShareUrl = new URL('https://t.me/share/url');
-  telegramShareUrl.searchParams.set('url', '');
-  telegramShareUrl.searchParams.set('text', tgRawMessage);
-  const tgLink = telegramShareUrl.toString().replace(/&/g, '&amp;');
+const telegramShareUrl = new URL('https://t.me/share/url');
+telegramShareUrl.searchParams.set('url', 'https://t.me/share/url');
+telegramShareUrl.searchParams.set('text', tgRawMessage);
+const tgLink = telegramShareUrl.toString().replace(/&/g, '&amp;');
 
   // WhatsApp message
   const rawPhone = phone.replace(/\D/g, '');
@@ -223,13 +223,13 @@ Need assistance? Call us anytime.
           <td width="50%" valign="top" style="width: 50%; padding: 0 5px 0 0;">
             <a href="${waLink}" target="_blank"
               style="display: block; box-sizing: border-box; width: 100%; min-height: 48px; padding: 14px 10px; background-color: #25D366; color: #ffffff; text-align: center; text-decoration: none; border-radius: 8px; font-family: Arial, sans-serif; font-size: 14px; line-height: 20px; font-weight: bold; white-space: nowrap;">
-              WhatsApp Reply
+              WhatsApp 
             </a>
           </td>
           <td width="50%" valign="top" style="width: 50%; padding: 0 0 0 5px;">
             <a href="${tgLink}" target="_blank"
               style="display: block; box-sizing: border-box; width: 100%; min-height: 48px; padding: 14px 10px; background-color: #0088CC; color: #ffffff; text-align: center; text-decoration: none; border-radius: 8px; font-family: Arial, sans-serif; font-size: 14px; line-height: 20px; font-weight: bold; white-space: nowrap;">
-              Telegram Reply
+              Telegram 
             </a>
           </td>
         </tr>
