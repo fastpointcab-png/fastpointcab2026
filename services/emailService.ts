@@ -39,8 +39,7 @@ export const sendBookingEmail = async (details: BookingDetails): Promise<boolean
   const cleanDrop = drop.replace(/&/g, 'and').replace(/#/g, 'No. ');
 
   // Telegram message (clean & spaced)
-  const tgMessage = encodeURIComponent(
-`*NEW BOOKING REQUEST*
+  const tgRawMessage = `*NEW BOOKING REQUEST*
 
 *Customer:* Web Booking
 
@@ -65,10 +64,14 @@ Maps: ${details.drop ? `https://maps.google.com/?q=${encodeURIComponent(cleanDro
 
 *Schedule (IST):* ${scheduleIST}
 
-Trustyyellowcabs Booking System`
-  );
+Trustyyellowcabs Booking System`;
 
-  const tgLink = `https://t.me/share/url?text=${tgMessage}`;
+  // Telegram's HTTPS share endpoint requires both a URL and an optional text value.
+  // URLSearchParams keeps the full booking message safely encoded for iOS and email clients.
+  const telegramShareUrl = new URL('https://t.me/share/url');
+  telegramShareUrl.searchParams.set('url', 'https://www.trustyyellowcabs.in');
+  telegramShareUrl.searchParams.set('text', tgRawMessage);
+  const tgLink = telegramShareUrl.toString().replace(/&/g, '&amp;');
 
   // WhatsApp message
   const rawPhone = phone.replace(/\D/g, '');
@@ -213,17 +216,22 @@ Need assistance? Call us anytime.
       </table>
 
       <!-- Buttons -->
-      <div style="margin-top: 30px; text-align: center; display: flex; justify-content: center; gap: 10px;">
-        <a href="${waLink}" target="_blank"
-          style="background-color: #25D366; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold;">
-          WhatsApp Reply
-        </a>
-
-        <a href="${tgLink}" target="_blank"
-          style="background-color: #0088cc; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold;">
-          Telegram Reply
-        </a>
-      </div>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width: 100%; margin-top: 30px;">
+        <tr>
+          <td width="50%" valign="top" style="width: 50%; padding: 0 5px 0 0;">
+            <a href="${waLink}" target="_blank"
+              style="display: block; box-sizing: border-box; width: 100%; min-height: 48px; padding: 14px 10px; background-color: #25D366; color: #ffffff; text-align: center; text-decoration: none; border-radius: 8px; font-family: Arial, sans-serif; font-size: 14px; line-height: 20px; font-weight: bold; white-space: nowrap;">
+              WhatsApp Reply
+            </a>
+          </td>
+          <td width="50%" valign="top" style="width: 50%; padding: 0 0 0 5px;">
+            <a href="${tgLink}" target="_blank"
+              style="display: block; box-sizing: border-box; width: 100%; min-height: 48px; padding: 14px 10px; background-color: #0088CC; color: #ffffff; text-align: center; text-decoration: none; border-radius: 8px; font-family: Arial, sans-serif; font-size: 14px; line-height: 20px; font-weight: bold; white-space: nowrap;">
+              Telegram Reply
+            </a>
+          </td>
+        </tr>
+      </table>
 
     </div>
 
