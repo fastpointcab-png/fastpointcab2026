@@ -39,7 +39,8 @@ export const sendBookingEmail = async (details: BookingDetails): Promise<boolean
   const cleanDrop = drop.replace(/&/g, 'and').replace(/#/g, 'No. ');
 
   // Telegram message (clean & spaced)
-  const tgRawMessage = `*NEW BOOKING REQUEST*
+  const tgRawMessage =
+`*NEW BOOKING REQUEST*
 
 *Customer:* Web Booking
 
@@ -64,7 +65,8 @@ Maps: ${details.drop ? `https://maps.google.com/?q=${encodeURIComponent(cleanDro
 
 *Schedule (IST):* ${scheduleIST}
 
-Trustyyellowcabs Booking System`;
+Trustyyellowcabs Booking System`
+  ;
 
   // Telegram's HTTPS share endpoint requires both a URL and an optional text value.
   // URLSearchParams keeps the full booking message safely encoded for iOS and email clients.
