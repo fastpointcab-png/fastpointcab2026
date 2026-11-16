@@ -4,7 +4,7 @@ import { SEO_PAGE_CANDIDATES } from '../data/seoPageCandidates';
 export const SITE_URL = 'https://www.fastpointcab.in';
 const LOGO_URL = `${SITE_URL}/images/taxi-icon-512.png`;
 
-type SeoRoute = 'home' | 'about' | 'fleet' | 'services' | 'contact' | 'taxi-service' | 'book-a-trip' | 'booking-confirmed';
+type SeoRoute = 'home' | 'about' | 'fleet' | 'services' | 'contact' | 'urbania-rental' | 'taxi-service' | 'book-a-trip' | 'booking-confirmed';
 
 const routeSeo: Record<SeoRoute, { title: string; description: string; path: string; noindex?: boolean }> = {
   home: {
@@ -31,6 +31,11 @@ const routeSeo: Record<SeoRoute, { title: string; description: string; path: str
     title: 'Contact FastPointCab | Coimbatore Taxi Booking',
     description: 'Contact FastPointCab for taxi booking, WhatsApp support, and reliable travel services in Coimbatore, Tamil Nadu.',
     path: '/contact',
+  },
+  'urbania-rental': {
+    title: 'Urbania Rental in Coimbatore | FastPointCab',
+    description: 'Book a spacious Force Urbania rental in Coimbatore for group travel, corporate trips, tours, holidays, and family events.',
+    path: '/urbania-rental',
   },
   'taxi-service': {
     title: 'Taxi Service in Coimbatore | FastPointCab',
@@ -59,6 +64,7 @@ const getRouteSeo = (pathname: string) => {
   if (pathname === '/fleet') return routeSeo.fleet;
   if (pathname === '/services') return routeSeo.services;
   if (pathname === '/contact') return routeSeo.contact;
+  if (pathname === '/urbania-rental') return routeSeo['urbania-rental'];
   if (pathname === '/taxi-service-in-coimbatore') return routeSeo['taxi-service'];
   if (pathname === '/book-a-trip') return routeSeo['book-a-trip'];
   if (pathname === '/booking-confirmed') return routeSeo['booking-confirmed'];

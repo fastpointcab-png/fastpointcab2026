@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useLayoutEffect } from 'react';
 import { Navigate, Routes, Route, useLocation } from 'react-router-dom';
 import { SEO } from './components/SEO';
 import { Navbar } from './components/Navbar';
@@ -8,6 +8,7 @@ const Fleet = React.lazy(() => import('./pages/Fleet').then((module) => ({ defau
 const Services = React.lazy(() => import('./pages/Services').then((module) => ({ default: module.Services })));
 const About = React.lazy(() => import('./pages/About').then((module) => ({ default: module.About })));
 const Contact = React.lazy(() => import('./pages/Contact').then((module) => ({ default: module.Contact })));
+const UrbaniaRental = React.lazy(() => import('./pages/UrbaniaRental').then((module) => ({ default: module.UrbaniaRental })));
 const BookATrip = React.lazy(() => import('./pages/BookATrip').then((module) => ({ default: module.BookATrip })));
 const BookingConfirmed = React.lazy(() => import('./pages/BookingConfirmed').then((module) => ({ default: module.BookingConfirmed })));
 import { FloatingCallButton } from './components/FloatingCallButton';
@@ -15,13 +16,16 @@ import { MobileTabBar } from './components/MobileTabBar';
 const TaxiServiceCoimbatore = React.lazy(() => import('./pages/TaxiServiceCoimbatore').then((module) => ({ default: module.TaxiServiceCoimbatore })));
 const SeoLandingPage = React.lazy(() => import('./pages/SeoLandingPage').then((module) => ({ default: module.SeoLandingPage })));
 import { PUBLISHED_SEO_PAGES } from './data/seoPageCandidates';
+import { resetHomepageScroll } from './utils/homeScroll';
 
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
+  useLayoutEffect(() => {
+    if (pathname !== '/') return;
+
+    resetHomepageScroll();
   }, [pathname]);
 
   return null;
@@ -60,6 +64,7 @@ const App: React.FC = () => {
             <Route path="/services" element={<Services />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/urbania-rental" element={<UrbaniaRental />} />
             <Route path="/taxi-service-in-coimbatore" element={<TaxiServiceCoimbatore />} />
             {PUBLISHED_SEO_PAGES
               .filter((page) => page.category !== 'existing')

@@ -2,6 +2,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import { preloadRoute } from '../routePreload';
+import { resetHomepageScroll } from '../utils/homeScroll';
 
 export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,13 +34,28 @@ export const Navbar: React.FC = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
+  const preloadLink = (path: string) => ({
+    onPointerEnter: () => preloadRoute(path),
+    onFocus: () => preloadRoute(path),
+    onTouchStart: () => preloadRoute(path),
+  });
+
   const handleHomeClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     if (location.pathname !== '/') return;
 
     event.preventDefault();
     if (isOpen) skipMenuScrollRestore.current = true;
     const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-    window.scrollTo({ top: 0, behavior });
+    resetHomepageScroll(behavior);
+  };
+
+  const handleBookNowClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (location.pathname !== '/') return;
+
+    event.preventDefault();
+    if (isOpen) skipMenuScrollRestore.current = true;
+    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    resetHomepageScroll(behavior);
   };
 
   return (
@@ -46,7 +63,7 @@ export const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           
-          <Link to="/" className="flex items-center group gap-0.5">
+          <Link to="/" onClick={handleHomeClick} className="flex items-center group gap-0.5">
              <span className="text-xl font-extrabold tracking-tighter text-slate-900 transition-colors">
               Book  
              </span>
@@ -61,6 +78,7 @@ export const Navbar: React.FC = () => {
               <Link
                 key={link.path}
                 to={link.path}
+                {...preloadLink(link.path)}
                 onClick={link.path === '/' ? handleHomeClick : undefined}
                 className={`text-[11px] font-bold uppercase tracking-widest transition-all ${
                   isActive(link.path) 
@@ -73,7 +91,7 @@ export const Navbar: React.FC = () => {
             ))}
             <Link 
               to="/" 
-              state={{ scrollToBook: true }}
+              onClick={handleBookNowClick}
               className="bg-brand-yellow hover:bg-yellow-400 text-slate-950 px-8 py-3.5 rounded-lg font-bold text-xs uppercase tracking-widest transition-all shadow-md active:scale-95"
             >
               Book Now
@@ -111,6 +129,7 @@ export const Navbar: React.FC = () => {
               <Link
                 key={link.path}
                 to={link.path}
+                {...preloadLink(link.path)}
                 onClick={(event) => {
                   if (link.path === '/') handleHomeClick(event);
                   setIsOpen(false);
@@ -127,8 +146,10 @@ export const Navbar: React.FC = () => {
             <div className="pt-6">
               <Link
                 to="/"
-                state={{ scrollToBook: true }}
-                onClick={() => setIsOpen(false)}
+                onClick={(event) => {
+                  handleBookNowClick(event);
+                  setIsOpen(false);
+                }}
                 className="block w-full text-center bg-brand-yellow text-white hover:text-white active:text-white focus:text-white px-6 py-5 rounded-xl font-extrabold uppercase tracking-widest shadow-lg shadow-brand-yellow/20 transition-transform active:scale-[0.98]"
               >
                 Book Your Ride

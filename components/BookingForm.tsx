@@ -407,7 +407,7 @@ const VEHICLE_CONFIG = [
   { 
     type: VehicleType.SEDAN, 
     label: 'Sedan', 
-    image: '/images/sedan.webp', 
+    image: '/images/Sedan1.webp',
     capacity: 4,
     description: 'SEDAN'
   },
@@ -447,6 +447,21 @@ const VEHICLE_CONFIG = [
     description: 'Any types of vehicle available'
   },
 ];
+
+const vehicleImageUrls = VEHICLE_CONFIG
+  .map((vehicle) => vehicle.image)
+  .filter((image): image is string => Boolean(image));
+const preloadedVehicleImages = new Set<string>();
+
+const preloadVehicleImages = () => {
+  vehicleImageUrls.forEach((src) => {
+    if (preloadedVehicleImages.has(src)) return;
+    preloadedVehicleImages.add(src);
+    const image = new Image();
+    image.decoding = 'async';
+    image.src = src;
+  });
+};
 
 const InputWrapper = memo(({ children, icon: Icon, label }: { children: React.ReactNode; icon: any; label?: string }) => (
   <div className="relative group w-full">
@@ -767,6 +782,11 @@ export const BookingForm: React.FC<{ forceMapActive?: boolean; onMapBack?: () =>
   const [step, setStep] = useState(1);
   const stepRef = useRef(1);
   useEffect(() => { stepRef.current = step; }, [step]);
+
+  // Load vehicle art during the mobile step so Select Vehicle can paint from cache.
+  useEffect(() => {
+    if (step === 2) preloadVehicleImages();
+  }, [step]);
 
   const [isMobileScreen, setIsMobileScreen] = useState(false);
   const isAndroidBrowser = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
@@ -2698,7 +2718,7 @@ const handleWhatsAppConfirm = () => {
                         alt={v.label}
                         width="160"
                         height="80"
-                        loading="lazy"
+                        loading="eager"
                         decoding="async"
                         className="w-full h-auto object-contain rounded-lg"
                         style={isMapActive && isMobileScreen ? { width: '100%', height: 'auto', maxWidth: 'none', maxHeight: 'none' } : undefined}

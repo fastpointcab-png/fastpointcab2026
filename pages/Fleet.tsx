@@ -27,6 +27,13 @@ export const Fleet: React.FC = () => {
             <Link to="/suv-taxi-coimbatore" className="underline decoration-[#FF5F68]/50 underline-offset-4">SUV taxi</Link>
             <Link to="/innova-taxi-coimbatore" className="underline decoration-[#FF5F68]/50 underline-offset-4">Innova taxi</Link>
             <Link to="/tempo-traveller-rental-coimbatore" className="underline decoration-[#FF5F68]/50 underline-offset-4">Tempo Traveller rental</Link>
+            <Link
+              to="/urbania-rental"
+              onClick={() => document.scrollingElement?.scrollTo({ top: 0, left: 0, behavior: 'auto' })}
+              className="underline decoration-[#FF5F68]/50 underline-offset-4"
+            >
+              Urbania rental
+            </Link>
           </nav>
         </header>
 

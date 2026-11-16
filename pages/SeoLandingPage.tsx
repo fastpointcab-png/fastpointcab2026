@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Check, MapPin, Phone } from 'lucide-react';
+import { ArrowRight, BriefcaseBusiness, Check, Luggage, MapPin, Phone, Snowflake, UsersRound } from 'lucide-react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { SEO_PAGE_CANDIDATES, SeoPageCandidate } from '../data/seoPageCandidates';
 import { getSeoRelatedLinks } from '../data/seoInternalLinks';
@@ -314,6 +314,118 @@ const getSectionCopy = (page: SeoPageCandidate, area: string) => {
   }
 };
 
+const tempoQuoteUrl = 'https://wa.me/919488834020?text=Hi%20FastPointCab%2C%20I%20would%20like%20a%20quote%20for%20Tempo%20Traveller%20rental.';
+
+const TempoTravellerRentalPage: React.FC<{
+  copy: { overview: string; planning: string };
+  relatedLinks: ReturnType<typeof getSeoRelatedLinks>;
+}> = ({ copy, relatedLinks }) => {
+  const features = [
+    { value: '12–18', label: 'Seater', icon: UsersRound },
+    { value: 'AC', label: 'Comfort', icon: Snowflake },
+    { value: 'Luggage', label: 'Space', icon: Luggage },
+  ];
+  const categories = [
+    { label: 'Group Travel', icon: UsersRound },
+    { label: 'Corporate Trips', icon: BriefcaseBusiness },
+    { label: 'Tour & Holiday', icon: Snowflake },
+    { label: 'Family Events', icon: UsersRound },
+  ];
+
+  return (
+    <div className="min-h-screen overflow-hidden bg-white pb-10 text-[#0B1733] sm:pb-14 lg:pb-16">
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 pt-7 text-sm font-semibold text-slate-500 sm:pt-9">
+          <Link to="/" className="transition-colors hover:text-[#FF5F68]">Home</Link>
+          <span aria-hidden="true" className="text-slate-300">›</span>
+          <Link to="/fleet" className="transition-colors hover:text-[#FF5F68]">Fleet</Link>
+          <span aria-hidden="true" className="text-slate-300">›</span>
+          <span className="text-[#FF5F68]">Tempo Traveller Rental</span>
+        </nav>
+
+        <main>
+          <section className="grid items-center gap-8 pb-10 pt-10 md:grid-cols-[0.85fr_1.15fr] md:gap-10 md:pb-14 md:pt-14 lg:grid-cols-2 lg:gap-8 lg:pb-16 lg:pt-16">
+            <div className="max-w-xl lg:order-2">
+              <p className="mb-3 text-xs font-extrabold uppercase tracking-[0.18em] text-[#FF5F68]">Premium Group Travel</p>
+              <h1 className="text-5xl font-extrabold leading-[0.95] tracking-[-0.055em] sm:text-6xl lg:text-[76px]">
+                Tempo Traveller <span className="text-[#FF5F68]">Rental</span>
+              </h1>
+              <p className="mt-6 max-w-md text-lg font-semibold leading-8 text-slate-600 sm:text-xl">
+                Spacious and comfortable group travel for every journey.
+              </p>
+              <div className="mt-6 h-1.5 w-14 rounded-full bg-[#FF5F68]" />
+
+              <div className="mt-8 grid max-w-lg grid-cols-3 gap-3 sm:gap-4">
+                {features.map(({ value, label, icon: Icon }) => (
+                  <div key={label} className="flex min-h-[112px] flex-col items-center justify-center rounded-2xl border border-[#FFE1E4] bg-[#FFF8F8] px-2 py-4 text-center">
+                    <Icon size={27} strokeWidth={2.2} className="mb-3 text-[#FF5F68]" aria-hidden="true" />
+                    <p className="text-base font-extrabold leading-tight sm:text-lg">{value}</p>
+                    <p className="mt-1 text-xs font-semibold text-slate-600 sm:text-sm">{label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex min-h-[230px] items-center justify-center md:min-h-[330px] lg:order-1 lg:min-h-[390px]">
+              <img
+                src="/images/tempo travaller.webp"
+                alt="Tempo Traveller rental vehicle"
+                width="900"
+                height="500"
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
+                className="h-auto max-h-[390px] w-full object-contain"
+              />
+            </div>
+          </section>
+
+          <section className="grid gap-6 lg:grid-cols-[1.05fr_1.95fr] lg:items-center lg:gap-10" aria-labelledby="tempo-rental-information">
+            <div className="rounded-2xl border border-[#FFE1E4] bg-[#FFF8F8] p-6 sm:p-8">
+              <h2 id="tempo-rental-information" className="text-2xl font-extrabold sm:text-3xl">Rental Information</h2>
+              <p className="mt-4 text-3xl font-extrabold text-[#159447] sm:text-4xl">Contact for Pricing</p>
+              <p className="mt-3 text-sm font-medium leading-6 text-slate-600">{copy.planning}</p>
+              <div className="mt-5 space-y-3 border-t border-[#F5D7DA] pt-5 text-sm font-semibold text-slate-700">
+                {['Group-friendly seating', 'Driver included', 'Clean & well-maintained'].map((item) => (
+                  <p key={item} className="flex items-center gap-3"><Check size={18} className="shrink-0 rounded-full bg-[#FF5F68] p-0.5 text-white" aria-hidden="true" />{item}</p>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-y-7 sm:grid-cols-4 sm:gap-0">
+              {categories.map(({ label, icon: Icon }, index) => (
+                <div key={label} className={`flex flex-col items-center justify-center px-3 text-center ${index > 0 ? 'sm:border-l sm:border-slate-200' : ''}`}>
+                  <Icon size={38} strokeWidth={1.8} className="text-[#FF5F68]" aria-hidden="true" />
+                  <span className="mt-3 text-sm font-extrabold sm:text-base">{label}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="mt-10 flex flex-col gap-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_8px_30px_rgba(15,23,42,0.04)] sm:mt-14 sm:p-7 md:flex-row md:items-center md:justify-between md:px-8 lg:mt-16" aria-labelledby="tempo-rental-cta">
+            <div>
+              <h2 id="tempo-rental-cta" className="text-2xl font-extrabold sm:text-3xl">Book Tempo Traveller Rental Today</h2>
+              <p className="mt-2 text-sm font-medium leading-6 text-slate-600 sm:text-base">Ideal for family trips, corporate travel, tours and special events.</p>
+            </div>
+            <div className="flex w-full justify-start md:w-auto md:justify-end">
+              <a href={tempoQuoteUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-14 items-center justify-center rounded-xl border-2 border-[#0B1733] px-8 text-sm font-extrabold uppercase tracking-wide text-[#0B1733] transition-colors hover:bg-slate-50">
+                Get a Quote
+              </a>
+            </div>
+          </section>
+
+          <section className="border-t border-slate-200 py-10 md:py-14" aria-labelledby="tempo-related-pages">
+            <h2 id="tempo-related-pages" className="text-2xl font-extrabold tracking-tight text-[#0B1733] md:text-3xl">Related FastPointCab pages</h2>
+            <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {relatedLinks.map((link) => <li key={link.path}><Link to={link.path} className="block rounded-lg border border-slate-200 px-4 py-3 text-sm font-bold text-[#0B1733] transition-colors hover:border-[#FF5F68] hover:text-[#FF5F68]">{link.label}</Link></li>)}
+            </ul>
+          </section>
+        </main>
+      </div>
+    </div>
+  );
+};
+
 export const SeoLandingPage: React.FC = () => {
   const { pathname } = useLocation();
   const page = SEO_PAGE_CANDIDATES.find((candidate) => candidate.path === pathname && candidate.status === 'published');
@@ -324,6 +436,10 @@ export const SeoLandingPage: React.FC = () => {
   const area = page.category === 'area' ? areaName(page) : 'Coimbatore';
   const sectionCopy = getSectionCopy(page, area);
   const relatedLinks = getSeoRelatedLinks(page);
+
+  if (pathname === '/tempo-traveller-rental-coimbatore') {
+    return <TempoTravellerRentalPage copy={copy} relatedLinks={relatedLinks} />;
+  }
 
   return (
     <div className="min-h-screen bg-white pb-14 sm:pb-16 lg:pb-20">

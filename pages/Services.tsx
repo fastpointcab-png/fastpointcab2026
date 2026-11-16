@@ -36,7 +36,7 @@ export const Services: React.FC = () => {
         <header className="grid px-1 pb-8 pt-8 text-left sm:px-0 md:grid-cols-2 md:items-center md:gap-8 md:pb-10 md:pt-10 lg:gap-12 lg:pb-12 lg:pt-14">
           <div>
             <p className="mb-3 text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#FF5F68] sm:text-xs">Our Services</p>
-            <h1 className="text-[29px] font-extrabold leading-[1.15] tracking-[-0.03em] text-[#0B1733]  md:text-[34px] lg:text-[44px]">Your Go-To Cab Service in Kovai</h1>
+            <h1 className="text-[29px] font-extrabold leading-[1.15] tracking-[-0.03em] text-[#0B1733]  md:text-[34px] lg:text-[44px]">Reliable Cab Services in Coimbatore</h1>
             <div className="mt-4 h-1 w-14 rounded-full bg-[#FF5F68]"></div>
           </div>
 

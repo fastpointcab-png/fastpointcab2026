@@ -2,12 +2,9 @@ import React, { useEffect, useCallback, useRef, useState } from 'react';
 import { BookingForm } from '../components/BookingForm';
 import { SERVICES_DATA, TESTIMONIALS_DATA } from '../constants';
 import { ArrowRight, Star, MapPin, CheckCircle, Users } from 'lucide-react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 export const Home: React.FC<{ onBookingMapChange?: (active: boolean) => void }> = ({ onBookingMapChange }) => {
-  const { state, pathname } = useLocation();
-  const navigate = useNavigate();
-  const handledScrollToBook = useRef(false);
   const feedbackCloneCount = 3;
   const [feedbackIndex, setFeedbackIndex] = useState(feedbackCloneCount);
   const [visibleReviews, setVisibleReviews] = useState(3);
@@ -18,18 +15,15 @@ export const Home: React.FC<{ onBookingMapChange?: (active: boolean) => void }> 
   const feedbackSectionRef = useRef<HTMLElement>(null);
   const touchStartX = useRef<number | null>(null);
 
-  const scrollToBooking = useCallback(() => {
-    const element = document.getElementById('book');
-    if (element) {
-      const navbarHeight = 80;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - navbarHeight - 20;
+  const scrollHomepageToTop = useCallback(() => {
+    const scrollingElement = document.scrollingElement;
+    if (!scrollingElement) return;
 
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth"
-      });
-    }
+    scrollingElement.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    });
   }, []);
 
   const nextFeedback = useCallback(() => {
@@ -86,22 +80,6 @@ export const Home: React.FC<{ onBookingMapChange?: (active: boolean) => void }> 
     const frame = window.requestAnimationFrame(() => setFeedbackTransitioning(true));
     return () => window.cancelAnimationFrame(frame);
   }, [feedbackTransitioning]);
-
-  useEffect(() => {
-    if (state && state.scrollToBook && !handledScrollToBook.current) {
-      handledScrollToBook.current = true;
-      navigate(pathname, { replace: true, state: null });
-      requestAnimationFrame(scrollToBooking);
-    } else if (handledScrollToBook.current) {
-      return;
-    } else {
-      window.scrollTo({
-        top: 0,
-        left: 0,
-        behavior: 'auto'
-      });
-    }
-  }, [state, pathname, navigate, scrollToBooking]);
 
   const TestimonialCard: React.FC<{ t: any }> = ({ t }) => (
     <article className="flex h-full min-h-[270px] w-full flex-col rounded-[20px] border border-slate-200 bg-white p-6 shadow-[0_12px_32px_rgba(15,23,42,0.06)]   sm:p-7">
@@ -194,36 +172,36 @@ export const Home: React.FC<{ onBookingMapChange?: (active: boolean) => void }> 
       </section>
 
       {/* App-Style Quote / Trust Highlights */}
-      <section className="select-none bg-white pt-6 pb-0 sm:pt-8 sm:pb-0 md:pt-14 md:pb-14 lg:pt-16 lg:pb-0">
+      <section className="select-none bg-white pt-6 pb-0 sm:pt-8 sm:pb-0 md:pt-14 md:pb-0 lg:pt-16">
         <div className="container mx-auto max-w-7xl px-4 text-center sm:px-6">
           <div className="mx-auto mb-5 h-1 w-14 rounded-full bg-[#FF5F68]"></div>
 
-          <p className="mx-auto max-w-6xl whitespace-nowrap text-[clamp(0.625rem,3.2vw,1.5rem)] font-extrabold leading-[1.25] tracking-[-0.025em] text-[#0B1733] sm:text-3xl md:text-4xl lg:text-[42px] xl:text-5xl">
+          <h2 className="mx-auto max-w-5xl text-2xl font-extrabold leading-tight tracking-[-0.025em] text-[#0B1733] sm:text-3xl md:text-4xl lg:text-5xl">
             Local ride ah? Outstation ah? <span className="text-[#FF5F68]">Travel Anytime!</span>
-          </p>
+          </h2>
 
-          <div className="mx-auto mt-7 flex w-full max-w-4xl flex-col items-center justify-center gap-4 rounded-[24px] border border-[#FFE1E4] bg-white px-5 py-5 shadow-[0_12px_32px_rgba(255,95,104,0.08)] sm:w-fit sm:flex-row sm:gap-6 sm:rounded-full sm:px-8 sm:py-4 md:gap-8 md:px-10">
-            <div className="flex flex-wrap items-center justify-center gap-3 sm:flex-nowrap">
-              <div className="flex gap-0.5 text-[#FF5F68]" aria-label="Five stars">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={17} fill="currentColor" strokeWidth={1.8} aria-hidden="true" />
-                ))}
+          <div className="mx-auto mt-7 hidden w-full max-w-2xl grid-cols-1 gap-3 sm:grid sm:grid-cols-2 sm:gap-4">
+            <div className="flex min-h-[92px] items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4 text-left">
+              <Star className="shrink-0 text-[#FF5F68]" size={24} fill="currentColor" strokeWidth={1.8} aria-hidden="true" />
+              <div>
+                <p className="text-lg font-extrabold leading-tight text-[#0B1733] sm:text-xl">4.9/5</p>
+                <p className="mt-1 text-xs font-bold text-slate-500 sm:text-sm">Customer Rating</p>
               </div>
-              <span className="whitespace-nowrap text-xs font-extrabold text-[#0B1733] sm:text-sm">4.9/5 Rating</span>
             </div>
 
-            <div className="h-px w-20 shrink-0 bg-[#D6DCE5] sm:h-8 sm:w-px"></div>
-
-            <div className="flex items-center justify-center gap-2.5 text-[#0B1733]">
-              <Users className="shrink-0 text-[#FF5F68]" size={23} strokeWidth={2.2} aria-hidden="true" />
-              <span className="text-xs font-bold leading-5 sm:text-sm">10,000+ Happy Rides Completed</span>
+            <div className="flex min-h-[92px] items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4 text-left">
+              <Users className="shrink-0 text-[#FF5F68]" size={24} strokeWidth={2.2} aria-hidden="true" />
+              <div>
+                <p className="text-lg font-extrabold leading-tight text-[#0B1733] sm:text-xl">10,000+</p>
+                <p className="mt-1 text-xs font-bold text-slate-500 sm:text-sm">Happy Rides Completed</p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Services Grid */}
-      <section className="bg-white pt-10 pb-0 sm:pt-12 sm:pb-0 md:py-20 lg:pt-16 lg:pb-24">
+      <section className="bg-white pt-[80px] pb-0 sm:pt-[80px] sm:pb-0 md:pt-[100px] md:pb-20 lg:pt-[140px] lg:pb-24">
         <div className="container mx-auto max-w-[1536px] px-4 sm:px-6 lg:px-8">
           <div className="mb-10 text-center sm:mb-12 lg:mb-16">
             <h2 className="text-3xl font-extrabold uppercase tracking-tight text-[#0B1833] md:text-5xl">Our Services</h2>
@@ -384,7 +362,7 @@ export const Home: React.FC<{ onBookingMapChange?: (active: boolean) => void }> 
 
           <div className="mt-10 text-center sm:mt-12">
             <button
-              onClick={scrollToBooking}
+              onClick={scrollHomepageToTop}
               className="rounded-lg bg-[#FF5F68] px-10 py-4 text-xs font-extrabold uppercase tracking-widest text-white shadow-[0_8px_22px_rgba(255,95,104,0.24)] transition-colors hover:bg-[#F04F59] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5F68] focus-visible:ring-offset-4 active:bg-[#E84852]"
             >
               Book Now

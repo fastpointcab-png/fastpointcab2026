@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Car, Phone, Calendar, Mail } from 'lucide-react';
+import { resetHomepageScroll } from '../utils/homeScroll';
 
 export const MobileTabBar: React.FC = () => {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ export const MobileTabBar: React.FC = () => {
 
     event.preventDefault();
     const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-    window.scrollTo({ top: 0, behavior });
+    resetHomepageScroll(behavior);
   };
 
   const navItems = [

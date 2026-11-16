@@ -1,53 +1,92 @@
 
-import React from 'react';
-import { Heart } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useLayoutEffect, useRef } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { resetHomepageScroll } from '../utils/homeScroll';
 
 export const Footer: React.FC = () => {
+  const { pathname } = useLocation();
+  const pendingPathRef = useRef<string | null>(null);
+
+  useLayoutEffect(() => {
+    if (pendingPathRef.current !== pathname) return;
+
+    pendingPathRef.current = null;
+    resetHomepageScroll();
+  }, [pathname]);
+
+  const handleHomeClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (window.location.pathname !== '/') return;
+
+    event.preventDefault();
+    resetHomepageScroll('smooth');
+  };
+
+  const handleQuickLinkClick = (path: string, event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (pathname === path) {
+      event.preventDefault();
+      resetHomepageScroll();
+      return;
+    }
+
+    pendingPathRef.current = path;
+  };
+
   return (
-    <footer className="relative bg-white pt-10 pb-24 md:pb-6 border-t border-slate-100 transition-colors duration-300">
-      
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6 md:gap-0">
-          
-          <Link to="/" className="flex items-center gap-1 group">
-             <span className="text-xl font-extrabold tracking-tight text-slate-900 group-hover:text-yellow-500 transition-colors">
-               Plan Your
-             </span>
-             <span className="text-xl font-extrabold tracking-tight text-yellow-500 transition-colors">
-               Cab Booking
-             </span>
-          </Link>
+    <footer className="relative border-t border-slate-100 bg-white pb-24 pt-12 md:pb-6">
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1.15fr] lg:gap-12">
+          <div>
+            <Link to="/" onClick={handleHomeClick} className="inline-flex items-center gap-1">
+              <span className="text-xl font-extrabold tracking-tight text-[#0B1733]">FastPoint</span>
+              <span className="text-xl font-extrabold tracking-tight text-[#FF5F68]">Cab</span>
+            </Link>
+            <p className="mt-4 max-w-sm text-sm leading-6 text-slate-600">
+              Reliable taxi rides in Coimbatore for local travel, airport transfers, outstation trips, and rentals.
+            </p>
+          </div>
 
-          <nav className="flex flex-wrap justify-center gap-6">
-            {['Home', 'About', 'Fleet', 'Services', 'Contact'].map((item) => (
-              <Link 
-                key={item}
-                to={item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`} 
-                className="text-sm font-medium text-slate-600 hover:text-yellow-600 transition-colors"
-              >
-                {item}
-              </Link>
-            ))}
-          </nav>
+          <div>
+            <h2 className="text-sm font-extrabold uppercase tracking-[0.12em] text-[#0B1733]">Quick Links</h2>
+            <nav className="mt-4 flex flex-col items-start gap-3">
+              {[
+                ['Home', '/'],
+                ['About', '/about'],
+                ['Fleet', '/fleet'],
+                ['Services', '/services'],
+                ['Contact', '/contact'],
+              ].map(([item, path]) => (
+                <Link
+                  key={item}
+                  to={path}
+                  onClick={(event) => handleQuickLinkClick(path, event)}
+                  className="text-sm text-slate-600 transition-colors hover:text-[#FF5F68]"
+                >
+                  {item}
+                </Link>
+              ))}
+            </nav>
+          </div>
 
-          <div className="hidden md:block w-[120px]"></div>
+          <div>
+            <h2 className="text-sm font-extrabold uppercase tracking-[0.12em] text-[#0B1733]">Contact</h2>
+            <address className="mt-4 flex flex-col gap-3 text-sm not-italic leading-6 text-slate-600">
+              <span>Coimbatore, Tamil Nadu, India</span>
+              <a href="tel:+919488834020" className="font-semibold text-[#0B1733] transition-colors hover:text-[#FF5F68]">
+                +91 94888 34020
+              </a>
+            </address>
+          </div>
         </div>
 
-        <div className="mt-8 mb-6 h-px w-full bg-slate-100" />
-
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
-          <p>&copy; {new Date().getFullYear()} FastPointCab. All rights reserved.</p>
-          <div className="flex items-center gap-1">
-             <span>Partner:</span>
-             <a 
-               href="https://www.trustyyellowcabs.in/" 
-               target="_blank" 
-               rel="noopener noreferrer"
-               className="hover:text-yellow-600 transition-colors font-medium flex items-center gap-1"
-             >
-               www.trustyyellowcabs.in
-             </a>
+        <div className="mt-10 border-t border-slate-100 pt-5 text-xs text-slate-500 md:mt-12">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p>&copy; {new Date().getFullYear()} FastPointCab. All Rights Reserved.</p>
+            <p>
+              Partner:{' '}
+              <a href="https://www.trustyyellowcabs.in/" target="_blank" rel="noopener noreferrer" className="font-medium transition-colors hover:text-[#FF5F68]">
+                www.trustyyellowcabs.in
+              </a>
+            </p>
           </div>
         </div>
       </div>
