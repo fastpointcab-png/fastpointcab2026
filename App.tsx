@@ -57,7 +57,7 @@ const App: React.FC = () => {
           </div>
         )}
         <main className={isBookATripPage ? 'flex-grow book-a-trip-main' : 'flex-grow'}>
-          <React.Suspense fallback={null}>
+          <React.Suspense fallback={<div className="min-h-screen bg-white" aria-hidden="true" />}>
             <Routes>
             <Route path="/" element={<Home onBookingMapChange={setHomeBookingMapOpen} />} />
             <Route path="/fleet" element={<Fleet />} />

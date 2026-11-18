@@ -11,6 +11,12 @@ if (!rootElement) throw new Error('Failed to find the root element');
 // Remove it before the existing app mounts so React remains the sole interactive UI.
 document.getElementById('seo-static-content')?.remove();
 
+// Route content is mounted asynchronously. Keep the browser from restoring a
+// stale page position while the new route is being mounted.
+if ('scrollRestoration' in window.history) {
+  window.history.scrollRestoration = 'manual';
+}
+
 const root = ReactDOM.createRoot(rootElement);
 
 root.render(
