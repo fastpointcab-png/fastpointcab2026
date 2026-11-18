@@ -1179,6 +1179,7 @@ export const BookingForm: React.FC<{ forceMapActive?: boolean; onMapBack?: () =>
   const [mobileSearchType, setMobileSearchType] = useState<null | 'pickup' | 'drop'>(null);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const phoneFocusScrollTimerRef = useRef<number | null>(null);
+  const phoneKeyboardResizeHandlerRef = useRef<(() => void) | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   
@@ -2341,11 +2342,28 @@ const handleWhatsAppConfirm = () => {
                   <span className={`block text-[8px] font-black uppercase tracking-widest mb-0.5 ${isMapActive && isMobileScreen ? 'text-slate-500' : 'text-[#FF6467]'}`}>Mobile Number</span>
                   <input
                     type="tel"
+                    inputMode="numeric"
                     placeholder="10-digit number"
                     value={formData.phone}
                     onFocus={(e) => {
                       if (!isMobileScreen || !isMapActive) return;
+                      setIsKeyboardVisible(true);
                       const input = e.currentTarget;
+
+                      phoneKeyboardResizeHandlerRef.current?.();
+                      const viewport = window.visualViewport;
+                      if (viewport) {
+                        const handleViewportResize = () => {
+                          if (viewport.height >= window.innerHeight - 80) {
+                            setIsKeyboardVisible(false);
+                          }
+                        };
+                        viewport.addEventListener('resize', handleViewportResize);
+                        phoneKeyboardResizeHandlerRef.current = () => {
+                          viewport.removeEventListener('resize', handleViewportResize);
+                          phoneKeyboardResizeHandlerRef.current = null;
+                        };
+                      }
 
                       if (phoneFocusScrollTimerRef.current !== null) {
                         window.clearTimeout(phoneFocusScrollTimerRef.current);
@@ -2374,6 +2392,7 @@ const handleWhatsAppConfirm = () => {
                       }, 250);
                     }}
                     onBlur={() => {
+                      phoneKeyboardResizeHandlerRef.current?.();
                       if (phoneFocusScrollTimerRef.current !== null) {
                         window.clearTimeout(phoneFocusScrollTimerRef.current);
                         phoneFocusScrollTimerRef.current = null;
