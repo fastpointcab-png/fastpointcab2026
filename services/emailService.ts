@@ -245,37 +245,31 @@ Need assistance? Call us anytime.
 `
   };
 
-  // Execute request with retry mechanism (up to 2 retries) and keepalive: true
-  const maxAttempts = 3;
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        keepalive: true, // CRITICAL: Guarantees fetch request completes during page unload/tab switch
-        headers: {
-          'accept': 'application/json',
-          'content-type': 'application/json'
-        },
-        body: JSON.stringify({ emailContent })
-      });
+  // Keep the booking request single-shot. Retrying after an unknown timeout can
+  // create duplicate Brevo emails because the first request may already have
+  // been accepted by the server.
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 15000);
 
-      if (response.ok) {
-        return true;
-      }
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      keepalive: true,
+      signal: controller.signal,
+      headers: {
+        'accept': 'application/json',
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({ emailContent })
+    });
 
-      console.error(`Booking email request failed with status ${response.status}`);
+    if (response.ok) return true;
 
-      // If client error like 400 or 401, don't retry
-      if (response.status >= 400 && response.status < 500 && response.status !== 429) {
-        break;
-      }
-    } catch (error) {
-      console.error(`Network error sending booking email (attempt ${attempt}/${maxAttempts})`);
-    }
-
-    if (attempt < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 500 * attempt));
-    }
+    console.error(`Booking email request failed with status ${response.status}`);
+  } catch (error) {
+    console.error('Network error sending booking email:', error);
+  } finally {
+    window.clearTimeout(timeoutId);
   }
 
   return false;

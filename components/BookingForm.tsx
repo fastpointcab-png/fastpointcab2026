@@ -407,7 +407,7 @@ const VEHICLE_CONFIG = [
   { 
     type: VehicleType.SEDAN, 
     label: 'Sedan', 
-    image: '/images/Sedan1.webp',
+    image: '/images/sedan.webp',
     capacity: 4,
     description: 'SEDAN'
   },
@@ -1930,15 +1930,13 @@ style.innerHTML = `
     leadSentRef.current = true; // Prevent abandonment lead during/after this process
 
     try {
-      // Send Email
-      const success = await sendBookingEmail(formData);
-      
-      // Save to Google Sheets
-      try {
-        await appendBookingToSheet(formData);
-      } catch (err) {
+      // The email API is the booking confirmation gate. Start the Sheets
+      // integration at the same time so it does not add another full network
+      // round trip before the user sees the confirmed page.
+      const sheetPromise = appendBookingToSheet(formData).catch((err) => {
         console.error('Sheet sync error:', err);
-      }
+      });
+      const success = await sendBookingEmail(formData);
       
       if (success) {
         submittedRef.current = true;
@@ -1948,6 +1946,10 @@ style.innerHTML = `
         leadSentRef.current = false; // Allow retry or abandonment capture on failure
         alert("Booking failed. Please try again.");
       }
+
+      // Keep the promise observed without making the successful email request
+      // wait on the secondary integration.
+      void sheetPromise;
     } catch (err) {
       console.error(err);
       isSubmittingRef.current = false;
@@ -2356,7 +2358,7 @@ const handleWhatsAppConfirm = () => {
                         const keyboardIsOpen = viewport
                           ? focusViewportHeight - viewport.height > 80
                           : false;
-                        if (!keyboardIsOpen) return;
+                        if (!viewport || !keyboardIsOpen) return;
 
                         const viewportBottom = viewport.offsetTop + viewport.height;
                         const inputRect = input.getBoundingClientRect();
