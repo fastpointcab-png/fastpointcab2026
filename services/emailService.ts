@@ -1,17 +1,7 @@
 import { BookingDetails } from '../types';
 
-export type BookingSubmissionResult = {
-  persisted: boolean;
-  emailAccepted: boolean;
-  bookingId?: string;
-  emailMessageId?: string;
-  uncertain?: boolean;
-  error?: string;
-  status?: number;
-};
-
-export const sendBookingEmail = async (details: BookingDetails): Promise<boolean | BookingSubmissionResult> => {
-  const url = details.isLead ? "/api/send-booking-email" : "/api/create-booking";
+export const sendBookingEmail = async (details: BookingDetails): Promise<boolean> => {
+  const url = "/api/send-booking-email";
 
   // Safely format schedule in 12-hour IST
   let scheduleIST = "N/A";
@@ -49,7 +39,7 @@ export const sendBookingEmail = async (details: BookingDetails): Promise<boolean
   const cleanDrop = drop.replace(/&/g, 'and').replace(/#/g, 'No. ');
 
   // Telegram message (clean & spaced)
-  const tgRawMessage =
+  const tgMessage = encodeURIComponent(
 `*NEW BOOKING REQUEST*
 
 *Customer:* Web Booking
@@ -75,15 +65,10 @@ Maps: ${details.drop ? `https://maps.google.com/?q=${encodeURIComponent(cleanDro
 
 *Schedule (IST):* ${scheduleIST}
 
-Trustyyellowcabs Booking System`
-  ;
+TrustyYellowCabs Booking System`
+  );
 
-  // Telegram's HTTPS share endpoint requires both a URL and an optional text value.
-  // URLSearchParams keeps the full booking message safely encoded for iOS and email clients.
-const telegramShareUrl = new URL('https://t.me/share/url');
-telegramShareUrl.searchParams.set('url', 'https://t.me/+pek2M40tUVkzMzQ1');
-telegramShareUrl.searchParams.set('text', tgRawMessage);
-const tgLink = telegramShareUrl.toString().replace(/&/g, '&amp;');
+  const tgLink = `https://t.me/share/url?text=${tgMessage}`;
 
   // WhatsApp message
   const rawPhone = phone.replace(/\D/g, '');
@@ -100,9 +85,7 @@ Reliable rides • Transparent fares • Professional drivers
 
 Customer Support
 ━━━━━━━━━━━━
-+91 94888 34020
 +91 88700 88020
-+91 422-3596446
 ━━━━━━━━━━━━
 
 Book your next ride instantly:
@@ -228,93 +211,59 @@ Need assistance? Call us anytime.
       </table>
 
       <!-- Buttons -->
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width: 100%; margin-top: 30px;">
-        <tr>
-          <td width="50%" valign="top" style="width: 50%; padding: 0 5px 0 0;">
-            <a href="${waLink}" target="_blank"
-              style="display: block; box-sizing: border-box; width: 100%; min-height: 48px; padding: 14px 10px; background-color: #25D366; color: #ffffff; text-align: center; text-decoration: none; border-radius: 8px; font-family: Arial, sans-serif; font-size: 14px; line-height: 20px; font-weight: bold; white-space: nowrap;">
-              WhatsApp 
-            </a>
-          </td>
-          <td width="50%" valign="top" style="width: 50%; padding: 0 0 0 5px;">
-            <a href="${tgLink}" target="_blank"
-              style="display: block; box-sizing: border-box; width: 100%; min-height: 48px; padding: 14px 10px; background-color: #0088CC; color: #ffffff; text-align: center; text-decoration: none; border-radius: 8px; font-family: Arial, sans-serif; font-size: 14px; line-height: 20px; font-weight: bold; white-space: nowrap;">
-              Telegram 
-            </a>
-          </td>
-        </tr>
-      </table>
+      <div style="margin-top: 30px; text-align: center; display: flex; justify-content: center; gap: 10px;">
+        <a href="${waLink}" target="_blank"
+          style="background-color: #25D366; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold;">
+          WhatsApp Reply
+        </a>
+
+        <a href="${tgLink}" target="_blank"
+          style="background-color: #0088cc; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold;">
+          Telegram Reply
+        </a>
+      </div>
 
     </div>
 
     <div style="background-color: #f1f5f9; padding: 15px; text-align: center; font-size: 12px; color: #94a3b8;">
-      Sent from FastPointCab Booking System
+      Sent from TrustyYellowCabs Booking System
     </div>
 
   </div>
 `
   };
 
-  // Keep the booking request single-shot. Retrying after an unknown timeout can
-  // create duplicate Brevo emails because the first request may already have
-  // been accepted by the server.
-  const controller = new AbortController();
-  const timeoutId = window.setTimeout(() => controller.abort(), 12000);
+  // Execute request with retry mechanism (up to 2 retries) and keepalive: true
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        keepalive: true, // CRITICAL: Guarantees fetch request completes during page unload/tab switch
+        headers: {
+          'accept': 'application/json',
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({ emailContent })
+      });
 
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      keepalive: true,
-      signal: controller.signal,
-      headers: {
-        'accept': 'application/json',
-        'content-type': 'application/json'
-      },
-      body: details.isLead
-        ? JSON.stringify({ emailContent })
-        : JSON.stringify({ bookingDetails: details, emailContent })
-    });
+      if (response.ok) {
+        return true;
+      }
 
-    const responseBody = await response.json().catch(() => ({}));
-    if (response.ok) {
-      return details.isLead
-        ? true
-        : {
-            persisted: responseBody.persisted === true,
-            emailAccepted: responseBody.emailAccepted === true,
-            bookingId: responseBody.bookingId,
-            emailMessageId: responseBody.emailMessageId,
-          };
+      console.error(`Booking email request failed with status ${response.status}`);
+
+      // If client error like 400 or 401, don't retry
+      if (response.status >= 400 && response.status < 500 && response.status !== 429) {
+        break;
+      }
+    } catch (error) {
+      console.error(`Network error sending booking email (attempt ${attempt}/${maxAttempts})`);
     }
 
-    if (!details.isLead && responseBody.uncertain === true) {
-      return { persisted: false, emailAccepted: false, bookingId: responseBody.bookingId, uncertain: true };
+    if (attempt < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 500 * attempt));
     }
-
-    if (!details.isLead) {
-      return {
-        persisted: false,
-        emailAccepted: false,
-        bookingId: details.leadId,
-        error: responseBody.error || `Booking request failed with status ${response.status}`,
-        status: response.status,
-      };
-    }
-
-    console.error(`Booking email request failed with status ${response.status}`);
-  } catch (error) {
-    console.error('Network error sending booking email:', error);
-    if (!details.isLead) {
-      return {
-        persisted: false,
-        emailAccepted: false,
-        bookingId: details.leadId,
-        uncertain: true,
-        error: 'Booking status is uncertain. Please contact us before trying again.',
-      };
-    }
-  } finally {
-    window.clearTimeout(timeoutId);
   }
 
   return false;
