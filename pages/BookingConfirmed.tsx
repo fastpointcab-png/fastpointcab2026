@@ -15,6 +15,10 @@ export const BookingConfirmed: React.FC = () => {
 
   if (!booking) return null;
 
+  const handleWhatsAppSupport = () => {
+    window.open('https://wa.me/919488834020', '_blank', 'noopener,noreferrer');
+  };
+
   const handleWhatsAppConfirm = () => {
     const tripDetails = booking.tripType === TripType.RENTAL
       ? `*Package:* ${booking.localPackage || 'Not specified'}\n*Drop:* ${booking.drop || 'Not specified'}`
@@ -50,6 +54,12 @@ export const BookingConfirmed: React.FC = () => {
           Driver will call you shortly.{!emailAccepted && ' Email notification is pending; your booking is saved.'}
         </p>
 
+        <button
+          onClick={handleWhatsAppSupport}
+          className="mb-3 flex w-full cursor-pointer items-center justify-center gap-3 rounded-2xl bg-[#25D366] py-4 text-[10px] font-black uppercase tracking-widest text-white shadow-lg transition-all active:scale-95"
+        >
+          <MessageCircle size={20} /> WhatsApp support
+        </button>
         {!emailAccepted && (
           <button
             onClick={handleWhatsAppConfirm}
