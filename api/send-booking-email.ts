@@ -1,4 +1,4 @@
-import { getEmailAttempt, rememberEmailAttempt, validateBrevoRequest, validateEmailContent } from '../utils/brevoSecurity';
+import { getEmailAttempt, rememberEmailAttempt, validateBrevoRequest, validateEmailContent } from './_brevoSecurity';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
@@ -16,7 +16,7 @@ export default async function handler(req: any, res: any) {
   const emailContent = req.body?.emailContent;
   const bookingId = typeof req.body?.bookingId === 'string' ? req.body.bookingId : '';
 
-  if (!apiKey || !validateEmailContent(emailContent) || !emailContent.subject.startsWith('⚠️ ABANDONED LEAD: ')) {
+  if (!apiKey || !validateEmailContent(emailContent) || !/^.*ABANDONED LEAD:\s/.test(emailContent.subject)) {
     res.status(400).json({ error: 'Invalid booking email request' });
     return;
   }

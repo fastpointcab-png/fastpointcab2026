@@ -1,5 +1,14 @@
 import { BookingDetails } from '../types';
 
+const getSafeErrorMessage = (value: unknown, fallback: string) => {
+  if (typeof value === 'string' && value.trim()) return value;
+  if (value && typeof value === 'object') {
+    const message = (value as { message?: unknown }).message;
+    if (typeof message === 'string' && message.trim()) return message;
+  }
+  return fallback;
+};
+
 export type BookingSubmissionResult = {
   persisted: boolean;
   emailAccepted: boolean;
@@ -281,7 +290,7 @@ Need assistance? Call us anytime.
         persisted: false,
         emailAccepted: false,
         bookingId: details.leadId,
-        error: responseBody.error || `Booking request failed with status ${response.status}`,
+        error: getSafeErrorMessage(responseBody.error, `Booking request failed with status ${response.status}`),
         status: response.status,
       };
     }

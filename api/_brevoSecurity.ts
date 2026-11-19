@@ -26,21 +26,14 @@ const isAllowedOrigin = (req: any) => {
 
 export const validateBrevoRequest = (req: any, kind: BrevoRequestKind) => {
   if (!isAllowedOrigin(req)) return { ok: false, status: 403, error: 'Request origin not allowed' };
-
   const bodySize = JSON.stringify(req.body || {}).length;
   if (bodySize > MAX_PAYLOAD_BYTES) return { ok: false, status: 413, error: 'Request payload is too large' };
-
   const key = `${kind}:${getClientKey(req)}`;
   const now = Date.now();
   const current = rateLimits.get(key);
-  if (!current || current.resetAt <= now) {
-    rateLimits.set(key, { count: 1, resetAt: now + WINDOW_MS });
-  } else if (current.count >= MAX_REQUESTS_PER_WINDOW) {
-    return { ok: false, status: 429, error: 'Too many email requests' };
-  } else {
-    current.count += 1;
-  }
-
+  if (!current || current.resetAt <= now) rateLimits.set(key, { count: 1, resetAt: now + WINDOW_MS });
+  else if (current.count >= MAX_REQUESTS_PER_WINDOW) return { ok: false, status: 429, error: 'Too many email requests' };
+  else current.count += 1;
   return { ok: true as const };
 };
 

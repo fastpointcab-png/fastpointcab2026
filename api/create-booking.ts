@@ -1,4 +1,4 @@
-import { getEmailAttempt, rememberEmailAttempt, validateBrevoRequest, validateEmailContent } from '../utils/brevoSecurity';
+import { getEmailAttempt, rememberEmailAttempt, validateBrevoRequest, validateEmailContent } from './_brevoSecurity';
 
 const REQUEST_TIMEOUT_MS = 8000;
 
@@ -68,7 +68,15 @@ export default async function handler(req: any, res: any) {
       }),
     });
 
-    if (!sheetResponse.ok) {
+    const sheetResponseText = await sheetResponse.text();
+    let sheetResponseBody: any = null;
+    try {
+      sheetResponseBody = sheetResponseText ? JSON.parse(sheetResponseText) : null;
+    } catch {
+      // Existing Apps Script deployments may return an empty or non-JSON success body.
+    }
+
+    if (!sheetResponse.ok || sheetResponseBody?.success === false || sheetResponseBody?.ok === false || sheetResponseBody?.error) {
       console.error(`Booking persistence failed with status ${sheetResponse.status}`);
       res.status(502).json({ error: 'Booking could not be recorded', uncertain: false });
       return;
