@@ -1,7 +1,17 @@
 import { BookingDetails } from '../types';
 
-export const sendBookingEmail = async (details: BookingDetails): Promise<boolean> => {
-  const url = "/api/send-booking-email";
+export type BookingSubmissionResult = {
+  persisted: boolean;
+  emailAccepted: boolean;
+  bookingId?: string;
+  emailMessageId?: string;
+  uncertain?: boolean;
+  error?: string;
+  status?: number;
+};
+
+export const sendBookingEmail = async (details: BookingDetails): Promise<boolean | BookingSubmissionResult> => {
+  const url = details.isLead ? "/api/send-booking-email" : "/api/create-booking";
 
   // Safely format schedule in 12-hour IST
   let scheduleIST = "N/A";
@@ -233,37 +243,63 @@ Need assistance? Call us anytime.
 `
   };
 
-  // Execute request with retry mechanism (up to 2 retries) and keepalive: true
-  const maxAttempts = 3;
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        keepalive: true, // CRITICAL: Guarantees fetch request completes during page unload/tab switch
-        headers: {
-          'accept': 'application/json',
-          'content-type': 'application/json'
-        },
-        body: JSON.stringify({ emailContent })
-      });
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 12000);
 
-      if (response.ok) {
-        return true;
-      }
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      keepalive: true,
+      signal: controller.signal,
+      headers: {
+        'accept': 'application/json',
+        'content-type': 'application/json'
+      },
+      body: details.isLead
+        ? JSON.stringify({ emailContent })
+        : JSON.stringify({ bookingDetails: details, emailContent })
+    });
 
-      console.error(`Booking email request failed with status ${response.status}`);
-
-      // If client error like 400 or 401, don't retry
-      if (response.status >= 400 && response.status < 500 && response.status !== 429) {
-        break;
-      }
-    } catch (error) {
-      console.error(`Network error sending booking email (attempt ${attempt}/${maxAttempts})`);
+    const responseBody = await response.json().catch(() => ({}));
+    if (response.ok) {
+      return details.isLead
+        ? true
+        : {
+            persisted: responseBody.persisted === true,
+            emailAccepted: responseBody.emailAccepted === true,
+            bookingId: responseBody.bookingId,
+            emailMessageId: responseBody.emailMessageId,
+          };
     }
 
-    if (attempt < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+    if (!details.isLead && responseBody.uncertain === true) {
+      return { persisted: false, emailAccepted: false, bookingId: responseBody.bookingId, uncertain: true };
     }
+
+    if (!details.isLead) {
+      return {
+        persisted: false,
+        emailAccepted: false,
+        bookingId: details.leadId,
+        error: responseBody.error || `Booking request failed with status ${response.status}`,
+        status: response.status,
+      };
+    }
+
+    console.error(`Booking email request failed with status ${response.status}`);
+  } catch (error) {
+    console.error('Network error sending booking email:', error);
+    if (!details.isLead) {
+      return {
+        persisted: false,
+        emailAccepted: false,
+        bookingId: details.leadId,
+        uncertain: true,
+        error: 'Booking status is uncertain. Please contact us before trying again.',
+      };
+    }
+  } finally {
+    window.clearTimeout(timeoutId);
   }
 
   return false;
