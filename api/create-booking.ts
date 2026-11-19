@@ -1,3 +1,5 @@
+import { getEmailAttempt, rememberEmailAttempt, validateBrevoRequest, validateEmailContent } from '../utils/brevoSecurity';
+
 const REQUEST_TIMEOUT_MS = 8000;
 
 const withTimeout = async (input: RequestInfo | URL, init: RequestInit = {}) => {
@@ -16,14 +18,34 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
+  const requestCheck = validateBrevoRequest(req, 'booking');
+  if (!requestCheck.ok) {
+    res.status(requestCheck.status).json({ error: requestCheck.error, uncertain: false });
+    return;
+  }
+
   const bookingDetails = req.body?.bookingDetails;
   const emailContent = req.body?.emailContent;
   const bookingId = bookingDetails?.leadId;
   const scriptUrl = process.env.GOOGLE_SCRIPT_URL || process.env.VITE_GOOGLE_SCRIPT_URL;
   const apiKey = process.env.BREVO_API_KEY;
 
-  if (!bookingDetails || typeof bookingDetails !== 'object' || !bookingId) {
+  if (
+    !bookingDetails || typeof bookingDetails !== 'object' ||
+    typeof bookingId !== 'string' || bookingId.length > 100 ||
+    typeof bookingDetails.phone !== 'string' || !/^[6-9]\d{9}$/.test(bookingDetails.phone) ||
+    typeof bookingDetails.pickup !== 'string' || bookingDetails.pickup.length < 1 || bookingDetails.pickup.length > 500 ||
+    typeof bookingDetails.drop !== 'string' || bookingDetails.drop.length > 500 ||
+    typeof bookingDetails.vehicleType !== 'string' || typeof bookingDetails.tripType !== 'string' ||
+    !validateEmailContent(emailContent)
+  ) {
     res.status(400).json({ error: 'Booking details and booking ID are required' });
+    return;
+  }
+
+  const previousAttempt = getEmailAttempt(bookingId);
+  if (previousAttempt) {
+    res.status(201).json({ ok: true, bookingId, persisted: true, emailAccepted: previousAttempt.accepted, emailMessageId: previousAttempt.messageId, duplicate: true });
     return;
   }
 
@@ -79,6 +101,7 @@ export default async function handler(req: any, res: any) {
       emailAccepted = emailResponse.ok;
       emailMessageId = emailResponseBody?.messageId;
       if (!emailAccepted) {
+        rememberEmailAttempt(bookingId, { accepted: false });
         console.error('Brevo rejected booking email', {
           bookingId,
           status: emailResponse.status,
@@ -89,6 +112,7 @@ export default async function handler(req: any, res: any) {
         console.info('Brevo accepted booking email', { bookingId, messageId: emailMessageId });
       }
     } catch (error) {
+      rememberEmailAttempt(bookingId, { accepted: false });
       console.error('Brevo booking email request failed', {
         bookingId,
         error: error instanceof Error ? error.name : 'UnknownError',

@@ -256,7 +256,7 @@ Need assistance? Call us anytime.
         'content-type': 'application/json'
       },
       body: details.isLead
-        ? JSON.stringify({ emailContent })
+        ? JSON.stringify({ emailContent, bookingId: details.leadId })
         : JSON.stringify({ bookingDetails: details, emailContent })
     });
 

@@ -7,7 +7,6 @@ export const BookingConfirmed: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const booking = location.state?.booking as BookingDetails | undefined;
-  const emailAccepted = location.state?.emailAccepted !== false;
 
   useEffect(() => {
     if (!booking) navigate('/', { replace: true });
@@ -39,8 +38,6 @@ export const BookingConfirmed: React.FC = () => {
     window.open(whatsappUrl.toString(), '_blank', 'noopener,noreferrer');
   };
 
-  const handleWhatsAppSupport = handleWhatsAppConfirm;
-
   return (
     <main className="flex min-h-[100dvh] items-center justify-center bg-white px-6">
       <div className="w-full max-w-sm text-center animate-fade-in">
@@ -48,24 +45,14 @@ export const BookingConfirmed: React.FC = () => {
           <CheckCircle2 size={40} className="booking-confirmed-mark" />
         </div>
         <h1 className="mb-2 text-2xl font-black uppercase tracking-tight text-slate-900">Booking Confirmed!</h1>
-        <p className="mb-8 text-[11px] font-bold uppercase leading-relaxed tracking-widest text-slate-500">
-          Driver will call you shortly.{!emailAccepted && ' Email notification is pending; your booking is saved.'}
-        </p>
+        <p className="mb-8 text-[11px] font-bold uppercase leading-relaxed tracking-widest text-slate-500">Driver will call you shortly.</p>
 
         <button
-          onClick={handleWhatsAppSupport}
+          onClick={handleWhatsAppConfirm}
           className="mb-3 flex w-full cursor-pointer items-center justify-center gap-3 rounded-2xl bg-[#25D366] py-4 text-[10px] font-black uppercase tracking-widest text-white shadow-lg transition-all active:scale-95"
         >
-          <MessageCircle size={20} /> WhatsApp support
+          <MessageCircle size={20} /> Send Booking via WhatsApp
         </button>
-        {!emailAccepted && (
-          <button
-            onClick={handleWhatsAppConfirm}
-            className="mb-3 flex w-full cursor-pointer items-center justify-center gap-3 rounded-2xl bg-[#25D366] py-4 text-[10px] font-black uppercase tracking-widest text-white shadow-lg transition-all active:scale-95"
-          >
-            <MessageCircle size={20} /> Send Booking via WhatsApp
-          </button>
-        )}
         <button
           type="button"
           onClick={() => navigate('/', { replace: true })}
