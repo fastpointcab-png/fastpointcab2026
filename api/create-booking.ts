@@ -63,6 +63,7 @@ export default async function handler(req: any, res: any) {
   }
 
   let emailAccepted = false;
+  let emailMessageId: string | undefined;
   if (apiKey && emailContent && typeof emailContent === 'object') {
     try {
       const emailResponse = await withTimeout('https://api.brevo.com/v3/smtp/email', {
@@ -74,12 +75,24 @@ export default async function handler(req: any, res: any) {
         },
         body: JSON.stringify(emailContent),
       });
+      const emailResponseBody = await emailResponse.json().catch(() => ({}));
       emailAccepted = emailResponse.ok;
+      emailMessageId = emailResponseBody?.messageId;
       if (!emailAccepted) {
-        console.error(`Brevo rejected booking email with status ${emailResponse.status}`, { bookingId });
+        console.error('Brevo rejected booking email', {
+          bookingId,
+          status: emailResponse.status,
+          code: emailResponseBody?.code,
+          message: emailResponseBody?.message,
+        });
+      } else {
+        console.info('Brevo accepted booking email', { bookingId, messageId: emailMessageId });
       }
     } catch (error) {
-      console.error('Brevo booking email request failed', { bookingId, error: String(error) });
+      console.error('Brevo booking email request failed', {
+        bookingId,
+        error: error instanceof Error ? error.name : 'UnknownError',
+      });
     }
   } else {
     console.error('Brevo is not configured for booking email', { bookingId });
@@ -87,5 +100,5 @@ export default async function handler(req: any, res: any) {
 
   // A booking is successful once it is recorded. Brevo acceptance is reported
   // separately; a 2xx response from Brevo is not claimed to mean delivery.
-  res.status(201).json({ ok: true, bookingId, persisted: true, emailAccepted });
+  res.status(201).json({ ok: true, bookingId, persisted: true, emailAccepted, emailMessageId });
 }

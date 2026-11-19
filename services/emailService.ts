@@ -4,6 +4,7 @@ export type BookingSubmissionResult = {
   persisted: boolean;
   emailAccepted: boolean;
   bookingId?: string;
+  emailMessageId?: string;
   uncertain?: boolean;
   error?: string;
   status?: number;
@@ -282,6 +283,7 @@ Need assistance? Call us anytime.
             persisted: responseBody.persisted === true,
             emailAccepted: responseBody.emailAccepted === true,
             bookingId: responseBody.bookingId,
+            emailMessageId: responseBody.emailMessageId,
           };
     }
 

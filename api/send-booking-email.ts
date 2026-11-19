@@ -23,13 +23,25 @@ export default async function handler(req: any, res: any) {
       body: JSON.stringify(emailContent),
     });
 
+    const responseBody = await response.json().catch(() => ({}));
     if (!response.ok) {
+      console.error('Brevo rejected booking email', {
+        status: response.status,
+        code: responseBody?.code,
+        message: responseBody?.message,
+      });
       res.status(response.status).json({ error: 'Booking email could not be sent' });
       return;
     }
 
-    res.status(200).json({ ok: true });
-  } catch {
+    console.info('Brevo accepted booking email', {
+      messageId: responseBody?.messageId,
+    });
+    res.status(200).json({ ok: true, messageId: responseBody?.messageId });
+  } catch (error) {
+    console.error('Brevo booking email request failed', {
+      error: error instanceof Error ? error.name : 'UnknownError',
+    });
     res.status(502).json({ error: 'Booking email service unavailable' });
   }
 }
