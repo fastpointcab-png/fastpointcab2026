@@ -16,28 +16,27 @@ export const BookingConfirmed: React.FC = () => {
   if (!booking) return null;
 
   const handleWhatsAppConfirm = () => {
-    if (!booking) {
-      window.open('https://wa.me/919488834020', '_blank', 'noopener,noreferrer');
-      return;
-    }
-
     const tripDetails = booking.tripType === TripType.RENTAL
-      ? `*Package:* ${booking.localPackage || 'Not specified'}`
-      : `*Drop:* ${booking.drop}${booking.tripType === TripType.ROUND_TRIP ? `%0A*Days:* ${booking.numberOfDays || '1'}` : ''}`;
+      ? `*Package:* ${booking.localPackage || 'Not specified'}\n*Drop:* ${booking.drop || 'Not specified'}`
+      : `*Drop:* ${booking.drop || 'Not specified'}${booking.tripType === TripType.ROUND_TRIP ? `\n*Days:* ${booking.numberOfDays || '1'}` : ''}`;
     const dateTimeStr = (booking.date || booking.time)
       ? `*Date/Time:* ${booking.date || 'Not specified'} at ${booking.time || 'Not specified'}`
       : '*Date/Time:* Not specified';
+    const customerName = (booking as BookingDetails & { name?: string }).name || 'Web Booking';
     const message =
-      `*NEW BOOKING CONFIRMATION*` +
-      `%0A*Trip Type:* ${booking.tripType}` +
-      `%0A*Phone:* ${booking.phone}` +
-      `%0A*Pickup:* ${booking.pickup}` +
-      `%0A${tripDetails}` +
-      `%0A${dateTimeStr}` +
-      `%0A*Vehicle:* ${booking.vehicleType}` +
-      `%0A*Estimated Fare:* ${booking.estimatedFare || 'Not specified'}`;
+      `*NEW BOOKING CONFIRMATION*\n` +
+      `*Booking ID:* ${booking.leadId || 'Not specified'}\n` +
+      `*Customer:* ${customerName}\n` +
+      `*Phone:* ${booking.phone}\n` +
+      `*Pickup:* ${booking.pickup}\n` +
+      `${tripDetails}\n` +
+      `${dateTimeStr}\n` +
+      `*Vehicle:* ${booking.vehicleType}\n` +
+      `*Estimated Fare:* ${booking.estimatedFare || 'Not specified'}`;
 
-    window.open(`https://wa.me/919488834020?text=${message}`, '_blank', 'noopener,noreferrer');
+    const whatsappUrl = new URL('https://wa.me/919488834020');
+    whatsappUrl.searchParams.set('text', message);
+    window.open(whatsappUrl.toString(), '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -51,12 +50,14 @@ export const BookingConfirmed: React.FC = () => {
           Driver will call you shortly.{!emailAccepted && ' Email notification is pending; your booking is saved.'}
         </p>
 
-        <button
-          onClick={handleWhatsAppConfirm}
-          className="mb-3 flex w-full cursor-pointer items-center justify-center gap-3 rounded-2xl bg-[#25D366] py-4 text-[10px] font-black uppercase tracking-widest text-white shadow-lg transition-all active:scale-95"
-        >
-          <MessageCircle size={20} /> WhatsApp support
-        </button>
+        {!emailAccepted && (
+          <button
+            onClick={handleWhatsAppConfirm}
+            className="mb-3 flex w-full cursor-pointer items-center justify-center gap-3 rounded-2xl bg-[#25D366] py-4 text-[10px] font-black uppercase tracking-widest text-white shadow-lg transition-all active:scale-95"
+          >
+            <MessageCircle size={20} /> Send Booking via WhatsApp
+          </button>
+        )}
         <button
           type="button"
           onClick={() => navigate('/', { replace: true })}
