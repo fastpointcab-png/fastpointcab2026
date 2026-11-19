@@ -15,10 +15,6 @@ export const BookingConfirmed: React.FC = () => {
 
   if (!booking) return null;
 
-  const handleWhatsAppSupport = () => {
-    window.open('https://wa.me/919488834020', '_blank', 'noopener,noreferrer');
-  };
-
   const handleWhatsAppConfirm = () => {
     const tripDetails = booking.tripType === TripType.RENTAL
       ? `*Package:* ${booking.localPackage || 'Not specified'}\n*Drop:* ${booking.drop || 'Not specified'}`
@@ -42,6 +38,8 @@ export const BookingConfirmed: React.FC = () => {
     whatsappUrl.searchParams.set('text', message);
     window.open(whatsappUrl.toString(), '_blank', 'noopener,noreferrer');
   };
+
+  const handleWhatsAppSupport = handleWhatsAppConfirm;
 
   return (
     <main className="flex min-h-[100dvh] items-center justify-center bg-white px-6">
