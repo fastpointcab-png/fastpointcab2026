@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle2, MessageCircle } from 'lucide-react';
 import { BookingDetails, TripType } from '../types';
@@ -7,6 +7,13 @@ export const BookingConfirmed: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const booking = location.state?.booking as BookingDetails | undefined;
+  const emailAccepted = location.state?.emailAccepted !== false;
+
+  useEffect(() => {
+    if (!booking) navigate('/', { replace: true });
+  }, [booking, navigate]);
+
+  if (!booking) return null;
 
   const handleWhatsAppConfirm = () => {
     if (!booking) {
@@ -40,7 +47,9 @@ export const BookingConfirmed: React.FC = () => {
           <CheckCircle2 size={40} className="booking-confirmed-mark" />
         </div>
         <h1 className="mb-2 text-2xl font-black uppercase tracking-tight text-slate-900">Booking Confirmed!</h1>
-        <p className="mb-8 text-[11px] font-bold uppercase leading-relaxed tracking-widest text-slate-500">Driver will call you shortly.</p>
+        <p className="mb-8 text-[11px] font-bold uppercase leading-relaxed tracking-widest text-slate-500">
+          Driver will call you shortly.{!emailAccepted && ' Email notification is pending; your booking is saved.'}
+        </p>
 
         <button
           onClick={handleWhatsAppConfirm}

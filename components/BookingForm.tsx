@@ -1909,6 +1909,8 @@ style.innerHTML = `
     };
   }, [handleAbandonment]);
 
+  const bookingIdRef = useRef<string | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading || isSubmittingRef.current) return;
@@ -1931,26 +1933,30 @@ style.innerHTML = `
     leadSentRef.current = true; // Prevent abandonment lead during/after this process
 
     try {
-      // The email API is the booking confirmation gate. Start the Sheets
-      // integration at the same time so it does not add another full network
-      // round trip before the user sees the confirmed page.
-      const sheetPromise = appendBookingToSheet(formData).catch((err) => {
-        console.error('Sheet sync error:', err);
-      });
-      const success = await sendBookingEmail(formData);
+      const bookingId = bookingIdRef.current || crypto.randomUUID();
+      bookingIdRef.current = bookingId;
+      const result = await sendBookingEmail({ ...formData, leadId: bookingId });
       
-      if (success) {
+      if (typeof result !== 'boolean' && result.persisted) {
         submittedRef.current = true;
-        navigate('/booking-confirmed', { replace: true, state: { booking: formData } });
+        navigate('/booking-confirmed', { replace: true, state: { booking: { ...formData, leadId: bookingId }, emailAccepted: result.emailAccepted } });
+      } else if (typeof result !== 'boolean' && result.uncertain) {
+        isSubmittingRef.current = false;
+        const statusResponse = await fetch(`/api/booking-status?bookingId=${encodeURIComponent(result.bookingId || bookingId)}`).catch(() => null);
+        const status = statusResponse?.ok ? await statusResponse.json().catch(() => null) : null;
+        if (status?.found === true) {
+          submittedRef.current = true;
+          navigate('/booking-confirmed', { replace: true, state: { booking: { ...formData, leadId: bookingId }, emailAccepted: false } });
+        } else {
+          alert('We could not confirm the booking status yet. Please contact us before trying again.');
+        }
       } else {
         isSubmittingRef.current = false;
-        leadSentRef.current = false; // Allow retry or abandonment capture on failure
-        alert("Booking failed. Please try again.");
+        leadSentRef.current = false;
+        alert(typeof result !== 'boolean' && result.error
+          ? result.error
+          : "Booking failed. Please try again.");
       }
-
-      // Keep the promise observed without making the successful email request
-      // wait on the secondary integration.
-      void sheetPromise;
     } catch (err) {
       console.error(err);
       isSubmittingRef.current = false;
