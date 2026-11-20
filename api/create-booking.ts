@@ -1,4 +1,5 @@
 const REQUEST_TIMEOUT_MS = 8000;
+const BREVO_TIMEOUT_MS = 3000;
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = 5;
 const MAX_PAYLOAD_BYTES = 150_000;
@@ -121,15 +122,24 @@ export default async function handler(req: any, res: any) {
   let emailMessageId: string | undefined;
   if (apiKey && emailContent && typeof emailContent === 'object') {
     try {
-      const emailResponse = await withTimeout('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          accept: 'application/json',
-          'api-key': apiKey,
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify(emailContent),
-      });
+      const emailResponse = await (async () => {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), BREVO_TIMEOUT_MS);
+        try {
+          return await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+              accept: 'application/json',
+              'api-key': apiKey,
+              'content-type': 'application/json',
+            },
+            body: JSON.stringify(emailContent),
+            signal: controller.signal,
+          });
+        } finally {
+          clearTimeout(timeout);
+        }
+      })();
       const emailResponseBody = await emailResponse.json().catch(() => ({}));
       emailAccepted = emailResponse.ok;
       emailMessageId = emailResponseBody?.messageId;

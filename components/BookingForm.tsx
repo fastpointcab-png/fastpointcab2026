@@ -1189,6 +1189,12 @@ export const BookingForm: React.FC<{ forceMapActive?: boolean; onMapBack?: () =>
   const phoneInputRef = useRef<HTMLInputElement>(null);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [whatsappFallback, setWhatsappFallback] = useState<{ url: string; message: string } | null>(null);
+  const whatsappFallbackBookingRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (step !== 4) setWhatsappFallback(null);
+  }, [step]);
   
   const [locatingPickup, setLocatingPickup] = useState(false);
   const [gpsErrorPickup, setGpsErrorPickup] = useState<string | null>(null);
@@ -1913,6 +1919,35 @@ style.innerHTML = `
 
   const bookingIdRef = useRef<string | null>(null);
 
+  const openBookingWhatsAppFallback = useCallback((booking: BookingDetails, statusMessage: string) => {
+    const bookingId = booking.leadId || 'Not specified';
+    if (whatsappFallbackBookingRef.current === bookingId) return;
+    whatsappFallbackBookingRef.current = bookingId;
+
+    const tripDetails = booking.tripType === TripTypeRental
+      ? `*Package:* ${booking.localPackage || 'Not specified'}\n*Drop:* ${booking.drop || 'Not specified'}`
+      : `*Drop:* ${booking.drop || 'Not specified'}${booking.tripType === TripType.ROUND_TRIP ? `\n*Days:* ${booking.numberOfDays || '1'}` : ''}`;
+    const dateTime = (booking.date || booking.time)
+      ? `${booking.date || 'Not specified'} at ${booking.time || 'Not specified'}`
+      : 'Not specified';
+    const message =
+      `*NEW BOOKING REQUEST*\n` +
+      `*Booking Status:* ${statusMessage}\n` +
+      `*Booking ID:* ${bookingId}\n` +
+      `*Customer:* Web Booking\n` +
+      `*Phone:* ${booking.phone}\n` +
+      `*Pickup:* ${booking.pickup}\n` +
+      `${tripDetails}\n` +
+      `*Date/Time:* ${dateTime}\n` +
+      `*Vehicle:* ${booking.vehicleType || 'Not specified'}\n` +
+      `*Estimated Fare:* ${booking.estimatedFare || 'Not specified'}`;
+    const whatsappUrl = new URL('https://wa.me/919488834020');
+    whatsappUrl.searchParams.set('text', message);
+    const url = whatsappUrl.toString();
+    const opened = window.open(url, '_blank', 'noopener,noreferrer');
+    if (!opened) setWhatsappFallback({ url, message: 'Booking failed? Send details via WhatsApp.' });
+  }, []);
+
   const verifyBookingStatus = useCallback(async (bookingId: string) => {
     const retryDelays = [0, 500, 1000];
 
@@ -1949,6 +1984,7 @@ style.innerHTML = `
     }
 
     setLoading(true);
+    setWhatsappFallback(null);
     isSubmittingRef.current = true;
     leadSentRef.current = true; // Prevent abandonment lead during/after this process
 
@@ -1967,11 +2003,14 @@ style.innerHTML = `
           navigate('/booking-confirmed', { replace: true, state: { booking: { ...formData, leadId: bookingId }, emailAccepted: false } });
         } else {
           isSubmittingRef.current = false;
-          alert('We could not verify this booking yet. Please contact us before trying again. Your booking ID remains unchanged.');
+          const fallbackBooking = { ...formData, leadId: bookingId };
+          openBookingWhatsAppFallback(fallbackBooking, 'Booking status unconfirmed');
+          alert('We could not verify this booking yet. Your booking ID remains unchanged. Please contact us or use WhatsApp to share the booking details.');
         }
       } else {
         isSubmittingRef.current = false;
-        leadSentRef.current = false;
+        leadSentRef.current = true;
+        openBookingWhatsAppFallback({ ...formData, leadId: bookingId }, 'Booking persistence failed');
         alert(typeof result !== 'boolean' && result.error
           ? result.error
           : "Booking failed. Please try again.");
@@ -1979,7 +2018,8 @@ style.innerHTML = `
     } catch (err) {
       console.error(err);
       isSubmittingRef.current = false;
-      leadSentRef.current = false;
+      leadSentRef.current = true;
+      openBookingWhatsAppFallback({ ...formData, leadId: bookingIdRef.current || undefined }, 'Booking persistence failed');
       alert("Error sending booking. Check console.");
     } finally {
       setLoading(false);
@@ -2329,9 +2369,9 @@ const handleWhatsAppConfirm = () => {
         ) : (
           <div
             data-sheet-android-drag-surface="header"
-            className={`justify-between items-center mb-1 ${isMapActive && isMobileScreen ? 'min-h-[44px] pl-14 pr-1' : ''} ${isMapActive && !isSheetExpanded ? 'hidden md:flex' : 'flex'} ${step === 1 && !isMapActive ? 'hidden lg:flex' : 'flex'} ${isMapActive && isAndroidBrowser ? 'touch-none' : ''}`}
+            className={`justify-between items-center text-left mb-1 ${isMapActive && isMobileScreen ? 'min-h-[44px] pr-1' : ''} ${isMapActive && !isSheetExpanded ? 'hidden md:flex' : 'flex'} ${step === 1 && !isMapActive ? 'hidden lg:flex' : 'flex'} ${isMapActive && isAndroidBrowser ? 'touch-none' : ''}`}
           >
-            <h3 className={`${step === 2 && isMapActive && isMobileScreen ? 'text-[13px] tracking-wider' : 'text-md tracking-tight'} font-black text-slate-900 uppercase`}>
+            <h3 className={`${isMapActive && isMobileScreen ? 'min-w-0 flex-1 truncate text-left text-[13px] font-extrabold leading-5 tracking-[0.08em] pr-2' : 'text-left text-md tracking-tight font-black'} text-slate-900 uppercase`}>
               {step === 1 ? 'Enter Locations' : step === 2 ? 'Enter Mobile' : step === 3 ? 'Select Vehicle' : 'Trip Summary'}
             </h3>
             <div className="flex gap-1.5">
@@ -3011,6 +3051,21 @@ const handleWhatsAppConfirm = () => {
           </div>
         )}
       </form>
+      {step === 4 && whatsappFallback && (
+        <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-center">
+          <p className="mb-2 text-[11px] font-medium normal-case leading-4 tracking-normal text-slate-600">{whatsappFallback.message}</p>
+          <button
+            type="button"
+            onClick={() => {
+              window.open(whatsappFallback.url, '_blank', 'noopener,noreferrer');
+              setWhatsappFallback(null);
+            }}
+            className="w-full rounded-2xl bg-[#25D366] py-3 text-[10px] font-black uppercase tracking-widest text-white shadow-lg active:scale-95"
+          >
+            Send Booking via WhatsApp
+          </button>
+        </div>
+      )}
       </div>
       
       {mobileSearchType && (
