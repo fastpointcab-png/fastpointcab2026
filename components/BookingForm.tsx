@@ -940,7 +940,7 @@ export const BookingForm: React.FC<{ forceMapActive?: boolean; onMapBack?: () =>
   };
 
   const handleSheetPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isMobileScreen || !isMapActive || !e.isPrimary) return;
+    if (!isMobileScreen || !isMapActive || isKeyboardVisible || !e.isPrimary) return;
 
     const target = e.target as HTMLElement;
     const scrollContainer = target.closest<HTMLElement>('.app-scroll');
@@ -986,6 +986,7 @@ export const BookingForm: React.FC<{ forceMapActive?: boolean; onMapBack?: () =>
   };
 
   const handleSheetPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (isKeyboardVisible) return;
     if (sheetPointerId.current !== e.pointerId || sheetPointerStartY.current === null) return;
 
     const diff = e.clientY - sheetPointerStartY.current;
@@ -1056,6 +1057,10 @@ export const BookingForm: React.FC<{ forceMapActive?: boolean; onMapBack?: () =>
   };
 
   const handleSheetPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (isKeyboardVisible) {
+      resetSheetPointer();
+      return;
+    }
     if (sheetPointerId.current !== e.pointerId || sheetPointerStartY.current === null) return;
 
     const diff = e.clientY - sheetPointerStartY.current;
@@ -1178,8 +1183,11 @@ export const BookingForm: React.FC<{ forceMapActive?: boolean; onMapBack?: () =>
 
   const [mobileSearchType, setMobileSearchType] = useState<null | 'pickup' | 'drop'>(null);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
-  const phoneFocusScrollTimerRef = useRef<number | null>(null);
-  const phoneKeyboardResizeHandlerRef = useRef<(() => void) | null>(null);
+  const [keyboardViewport, setKeyboardViewport] = useState<{ height: number; offsetTop: number } | null>(null);
+  const keyboardVisibleRef = useRef(false);
+  const layoutViewportHeightRef = useRef<number | null>(null);
+  const keyboardViewportFrameRef = useRef<number | null>(null);
+  const phoneInputRef = useRef<HTMLInputElement>(null);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   
@@ -1999,6 +2007,79 @@ const handleWhatsAppConfirm = () => {
   );
   const isMobileSummary = isMapActive && isMobileScreen;
 
+  const ensurePhoneInputVisible = useCallback(() => {
+    const input = phoneInputRef.current;
+    const viewport = window.visualViewport;
+    const scrollContainer = input?.closest<HTMLElement>('.app-scroll');
+    if (!input || !viewport || !scrollContainer) return;
+
+    const visibleTop = viewport.offsetTop + 12;
+    const visibleBottom = viewport.offsetTop + viewport.height - 16;
+    const inputRect = input.getBoundingClientRect();
+    const bottomOverlap = inputRect.bottom - visibleBottom;
+    const topOverlap = visibleTop - inputRect.top;
+    const scrollDelta = bottomOverlap > 0
+      ? bottomOverlap + 12
+      : topOverlap > 0
+        ? -(topOverlap + 12)
+        : 0;
+
+    if (scrollDelta !== 0) {
+      scrollContainer.scrollBy({ top: scrollDelta, behavior: 'auto' });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isMobileScreen || !isMapActive) {
+      keyboardVisibleRef.current = false;
+      layoutViewportHeightRef.current = null;
+      setIsKeyboardVisible(false);
+      setKeyboardViewport(null);
+      return;
+    }
+
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    const updateKeyboardViewport = () => {
+      const layoutHeight = Math.max(window.innerHeight, document.documentElement.clientHeight);
+      if (!keyboardVisibleRef.current) {
+        layoutViewportHeightRef.current = layoutHeight;
+      }
+
+      const baselineHeight = layoutViewportHeightRef.current || layoutHeight;
+      const keyboardOpen = phoneInputRef.current === document.activeElement && viewport.height < baselineHeight;
+      keyboardVisibleRef.current = keyboardOpen;
+      setIsKeyboardVisible(keyboardOpen);
+      setKeyboardViewport(keyboardOpen ? { height: viewport.height, offsetTop: viewport.offsetTop } : null);
+
+      if (keyboardViewportFrameRef.current !== null) {
+        window.cancelAnimationFrame(keyboardViewportFrameRef.current);
+      }
+      if (keyboardOpen) {
+        keyboardViewportFrameRef.current = window.requestAnimationFrame(() => {
+          keyboardViewportFrameRef.current = null;
+          ensurePhoneInputVisible();
+        });
+      }
+    };
+
+    updateKeyboardViewport();
+    viewport.addEventListener('resize', updateKeyboardViewport);
+    viewport.addEventListener('scroll', updateKeyboardViewport);
+    window.addEventListener('resize', updateKeyboardViewport);
+
+    return () => {
+      viewport.removeEventListener('resize', updateKeyboardViewport);
+      viewport.removeEventListener('scroll', updateKeyboardViewport);
+      window.removeEventListener('resize', updateKeyboardViewport);
+      if (keyboardViewportFrameRef.current !== null) {
+        window.cancelAnimationFrame(keyboardViewportFrameRef.current);
+        keyboardViewportFrameRef.current = null;
+      }
+    };
+  }, [ensurePhoneInputVisible, isMapActive, isMobileScreen]);
+
   useEffect(() => {
     if (isMapActive) {
       loadGoogleMaps().catch(() => setMapError('Map could not be loaded.'));
@@ -2175,10 +2256,17 @@ const handleWhatsAppConfirm = () => {
             suppressSheetClick.current = false;
             return;
           }
-          if (isMapActive && !isSheetExpanded) {
+          if (isMapActive && !isSheetExpanded && !isKeyboardVisible) {
             setSheetPosition('half');
           }
         }}
+        style={isKeyboardVisible && keyboardViewport ? {
+          top: `${keyboardViewport.offsetTop}px`,
+          bottom: 'auto',
+          height: `${keyboardViewport.height}px`,
+          maxHeight: `${keyboardViewport.height}px`,
+          transform: 'none',
+        } : undefined}
       >
         {isMapActive && (
           <div 
@@ -2347,63 +2435,20 @@ const handleWhatsAppConfirm = () => {
                 <div className="flex min-w-0 flex-1 flex-col justify-center">
                   <span className={`block text-[8px] font-black uppercase tracking-widest mb-0.5 ${isMapActive && isMobileScreen ? 'text-slate-500' : 'text-[#FF6467]'}`}>Mobile Number</span>
                   <input
+                    ref={phoneInputRef}
                     type="tel"
                     inputMode="numeric"
                     placeholder="10-digit number"
                     value={formData.phone}
                     onFocus={(e) => {
                       if (!isMobileScreen || !isMapActive) return;
-                      setIsKeyboardVisible(true);
-                      const input = e.currentTarget;
-
-                      phoneKeyboardResizeHandlerRef.current?.();
-                      const viewport = window.visualViewport;
-                      if (viewport) {
-                        const handleViewportResize = () => {
-                          if (viewport.height >= window.innerHeight - 80) {
-                            setIsKeyboardVisible(false);
-                          }
-                        };
-                        viewport.addEventListener('resize', handleViewportResize);
-                        phoneKeyboardResizeHandlerRef.current = () => {
-                          viewport.removeEventListener('resize', handleViewportResize);
-                          phoneKeyboardResizeHandlerRef.current = null;
-                        };
-                      }
-
-                      if (phoneFocusScrollTimerRef.current !== null) {
-                        window.clearTimeout(phoneFocusScrollTimerRef.current);
-                      }
-
-                      const focusViewportHeight = window.visualViewport?.height ?? window.innerHeight;
-                      phoneFocusScrollTimerRef.current = window.setTimeout(() => {
-                        phoneFocusScrollTimerRef.current = null;
-                        const viewport = window.visualViewport;
-                        const keyboardIsOpen = viewport
-                          ? focusViewportHeight - viewport.height > 80
-                          : false;
-                        if (!viewport || !keyboardIsOpen) return;
-
-                        const viewportBottom = viewport.offsetTop + viewport.height;
-                        const inputRect = input.getBoundingClientRect();
-                        const overlap = inputRect.bottom - (viewportBottom - 16);
-                        if (overlap <= 0) return;
-
-                        const scrollContainer = input.closest<HTMLElement>('.app-scroll');
-                        if (scrollContainer) {
-                          scrollContainer.scrollBy({ top: overlap + 12, behavior: 'auto' });
-                        } else {
-                          input.scrollIntoView({ behavior: 'auto', block: 'nearest' });
-                        }
-                      }, 250);
+                      if (!window.visualViewport) setIsKeyboardVisible(true);
+                      window.requestAnimationFrame(ensurePhoneInputVisible);
                     }}
                     onBlur={() => {
-                      phoneKeyboardResizeHandlerRef.current?.();
-                      if (phoneFocusScrollTimerRef.current !== null) {
-                        window.clearTimeout(phoneFocusScrollTimerRef.current);
-                        phoneFocusScrollTimerRef.current = null;
-                      }
+                      keyboardVisibleRef.current = false;
                       setIsKeyboardVisible(false);
+                      setKeyboardViewport(null);
                     }}
                     onChange={(e) => {
                       const cleaned = e.target.value.replace(/\D/g, "");
