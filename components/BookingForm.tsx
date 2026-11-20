@@ -2252,7 +2252,7 @@ const handleWhatsAppConfirm = () => {
         {step === 2 && (
           <div className={`${isMapActive ? 'flex-1 flex flex-col min-h-0 justify-between' : 'space-y-4 py-3'} animate-fade-in flex flex-col items-stretch`}>
             {/* Scrollable Body */}
-            <div className={`${isMapActive ? 'flex-1 overflow-y-auto pr-1 space-y-4 app-scroll pb-2' : 'space-y-4'}`}>
+            <div className={`${isMapActive ? 'flex-1 min-h-0 overflow-y-auto pr-1 space-y-4 app-scroll pb-6' : 'space-y-4'}`}>
               <button 
                 type="button"
                 onClick={() => {
@@ -2338,13 +2338,13 @@ const handleWhatsAppConfirm = () => {
                 )}
 
               <div className={`${isMapActive && isMobileScreen
-                ? 'w-full bg-white border border-slate-200 focus-within:border-[#FF6269] focus-within:ring-4 focus-within:ring-[#FF6269]/10 rounded-2xl p-3.5 flex items-center gap-3 transition-all shadow-none'
+                ? 'w-full min-h-[64px] bg-white border border-slate-200 focus-within:border-[#FF6269] focus-within:ring-4 focus-within:ring-[#FF6269]/10 rounded-2xl p-3 flex items-center gap-3 transition-all shadow-none'
                 : 'w-full bg-[#FF6467]/5 border-2 border-[#FF6467] focus-within:ring-4 focus-within:ring-[#FF6467]/20 rounded-xl p-2.5 px-3.5 flex items-center gap-3 transition-all shadow-md shadow-[#FF6467]/5'
               } relative overflow-hidden text-left mt-2`}>
-                <span className={`text-[13px] font-semibold leading-none select-none border-r pr-2 ${isMapActive && isMobileScreen ? 'text-slate-700 border-slate-200' : 'text-[#FF6467] border-[#FF6467]/20'}`}>
+                <span className={`flex h-8 w-[42px] shrink-0 items-center justify-center text-[13px] font-semibold leading-none select-none border-r pr-2 ${isMapActive && isMobileScreen ? 'text-slate-700 border-slate-200' : 'text-[#FF6467] border-[#FF6467]/20'}`}>
                   +91
                 </span>
-                <div className="flex-1 min-w-0">
+                <div className="flex min-w-0 flex-1 flex-col justify-center">
                   <span className={`block text-[8px] font-black uppercase tracking-widest mb-0.5 ${isMapActive && isMobileScreen ? 'text-slate-500' : 'text-[#FF6467]'}`}>Mobile Number</span>
                   <input
                     type="tel"
@@ -2413,7 +2413,7 @@ const handleWhatsAppConfirm = () => {
                         e.target.blur();
                       }
                     }}
-                    className={`w-full bg-transparent border-none p-0 focus:ring-0 text-xs font-black outline-none text-slate-900 ${isMapActive && isMobileScreen ? 'placeholder-slate-400' : 'placeholder-[#FF6467]/40'}`}
+                    className={`w-full min-w-0 bg-transparent border-none p-0 focus:ring-0 font-black outline-none text-slate-900 ${isMapActive && isMobileScreen ? 'h-8 text-base leading-6 placeholder-slate-400 scroll-mb-24' : 'text-xs placeholder-[#FF6467]/40'}`}
                     maxLength={10}
                     autoFocus
                   />
@@ -2422,7 +2422,7 @@ const handleWhatsAppConfirm = () => {
             </div>
 
             {/* Sticky Footer */}
-            <div data-sheet-android-drag-surface="footer" className={`${isMapActive ? 'pt-3 border-t border-slate-100  bg-white/95  md:bg-transparent' : ''} ${isMapActive && isAndroidBrowser ? 'touch-none' : ''}`}>
+            <div data-sheet-android-drag-surface="footer" className={`${isMapActive ? 'shrink-0 pt-3 border-t border-slate-100  bg-white/95  md:bg-transparent' : ''} ${isMapActive && isAndroidBrowser ? 'touch-none' : ''}`}>
               <button
                 type="button"
                 onClick={() => {
