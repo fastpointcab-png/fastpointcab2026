@@ -2238,7 +2238,7 @@ const handleWhatsAppConfirm = () => {
             }));
             setStep(1);
           }}
-          className="booking-form-back md:hidden fixed top-[calc(env(safe-area-inset-top,16px)+16px)] left-4 z-50 bg-white/95  p-3 rounded-full shadow-xl border border-slate-200  flex items-center justify-center active:scale-95 transition-all pointer-events-auto"
+          className="booking-form-back md:hidden fixed top-[calc(env(safe-area-inset-top,0px)+12px)] left-3 z-[90] w-11 h-11 p-0 bg-white/95 rounded-full shadow-xl border border-slate-200 flex items-center justify-center active:scale-95 transition-all pointer-events-auto"
           title="Back"
         >
           <ArrowLeft size={18} className="text-slate-700  stroke-[3px]" />
@@ -2329,7 +2329,7 @@ const handleWhatsAppConfirm = () => {
         ) : (
           <div
             data-sheet-android-drag-surface="header"
-            className={`justify-between items-center mb-1 ${isMapActive && !isSheetExpanded ? 'hidden md:flex' : 'flex'} ${step === 1 && !isMapActive ? 'hidden lg:flex' : 'flex'} ${isMapActive && isAndroidBrowser ? 'touch-none' : ''}`}
+            className={`justify-between items-center mb-1 ${isMapActive && isMobileScreen ? 'min-h-[44px] pl-14 pr-1' : ''} ${isMapActive && !isSheetExpanded ? 'hidden md:flex' : 'flex'} ${step === 1 && !isMapActive ? 'hidden lg:flex' : 'flex'} ${isMapActive && isAndroidBrowser ? 'touch-none' : ''}`}
           >
             <h3 className={`${step === 2 && isMapActive && isMobileScreen ? 'text-[13px] tracking-wider' : 'text-md tracking-tight'} font-black text-slate-900 uppercase`}>
               {step === 1 ? 'Enter Locations' : step === 2 ? 'Enter Mobile' : step === 3 ? 'Select Vehicle' : 'Trip Summary'}
