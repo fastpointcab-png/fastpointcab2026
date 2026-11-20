@@ -262,7 +262,7 @@ Need assistance? Call us anytime.
   };
 
   const controller = new AbortController();
-  const timeoutId = window.setTimeout(() => controller.abort(), 12000);
+  const timeoutId = window.setTimeout(() => controller.abort(), 20000);
 
   try {
     const response = await fetch(url, {
@@ -273,21 +273,17 @@ Need assistance? Call us anytime.
         'accept': 'application/json',
         'content-type': 'application/json'
       },
-      body: details.isLead
-        ? JSON.stringify({ emailContent, bookingId: details.leadId })
-        : JSON.stringify({ bookingDetails: details, emailContent })
+      body: JSON.stringify({ bookingDetails: details, bookingId: details.leadId, emailContent })
     });
 
     const responseBody = await response.json().catch(() => ({}));
     if (response.ok) {
-      return details.isLead
-        ? true
-        : {
-            persisted: responseBody.persisted === true,
-            emailAccepted: responseBody.emailAccepted === true,
-            bookingId: responseBody.bookingId,
-            emailMessageId: responseBody.emailMessageId,
-          };
+      return {
+        persisted: responseBody.persisted === true,
+        emailAccepted: responseBody.emailAccepted === true,
+        bookingId: responseBody.bookingId,
+        emailMessageId: responseBody.emailMessageId,
+      };
     }
 
     if (!details.isLead && responseBody.uncertain === true) {

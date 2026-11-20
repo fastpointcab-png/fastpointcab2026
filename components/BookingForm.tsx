@@ -3,7 +3,6 @@ import { BookingDetails, VehicleType, TripType, FareBreakdown, PlaceData } from 
 import { MapPin, User, Phone, Smartphone, Car, Calendar, Clock, ArrowRight, ArrowLeft, CheckCircle2, MessageCircle, Map as MapIcon, AlertTriangle, Repeat, Navigation, Package, X, ChevronUp, ChevronDown, Locate } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { sendBookingEmail } from '../services/emailService';
-import { appendBookingToSheet } from '../services/googleSheets';
 import { motion } from 'framer-motion';
 
 declare const google: any;
@@ -1883,17 +1882,12 @@ style.innerHTML = `
       // ⚠️ Mark as sent synchronously BEFORE async calls to prevent duplicate triggers
       leadSentRef.current = true;
       
-    console.log('Capturing abandoned lead...');
-      
-      // Send Email
-      sendBookingEmail(bookingData);
-      
-      // Save to Google Sheets
-      try {
-        await appendBookingToSheet(bookingData);
-      } catch (err) {
-        console.error('Abandonment sheet sync error:', err);
-      }
+      console.log('Capturing abandoned lead...');
+
+      // The server records the lead before sending its notification. Keeping
+      // this as one request prevents the old client-side fire-and-forget sheet
+      // write from racing the notification request and creating duplicates.
+      void sendBookingEmail(bookingData);
     }
   }, []);
 
@@ -1918,6 +1912,24 @@ style.innerHTML = `
   }, [handleAbandonment]);
 
   const bookingIdRef = useRef<string | null>(null);
+
+  const verifyBookingStatus = useCallback(async (bookingId: string) => {
+    const retryDelays = [0, 500, 1000];
+
+    for (const delay of retryDelays) {
+      if (delay > 0) {
+        await new Promise<void>((resolve) => window.setTimeout(resolve, delay));
+      }
+
+      const statusResponse = await fetch(`/api/booking-status?bookingId=${encodeURIComponent(bookingId)}`, {
+        cache: 'no-store',
+      }).catch(() => null);
+      const status = statusResponse?.ok ? await statusResponse.json().catch(() => null) : null;
+      if (status?.found === true) return true;
+    }
+
+    return false;
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1949,14 +1961,13 @@ style.innerHTML = `
         submittedRef.current = true;
         navigate('/booking-confirmed', { replace: true, state: { booking: { ...formData, leadId: bookingId }, emailAccepted: result.emailAccepted } });
       } else if (typeof result !== 'boolean' && result.uncertain) {
-        isSubmittingRef.current = false;
-        const statusResponse = await fetch(`/api/booking-status?bookingId=${encodeURIComponent(result.bookingId || bookingId)}`).catch(() => null);
-        const status = statusResponse?.ok ? await statusResponse.json().catch(() => null) : null;
-        if (status?.found === true) {
+        const bookingVerified = await verifyBookingStatus(result.bookingId || bookingId);
+        if (bookingVerified) {
           submittedRef.current = true;
           navigate('/booking-confirmed', { replace: true, state: { booking: { ...formData, leadId: bookingId }, emailAccepted: false } });
         } else {
-          alert('We could not confirm the booking status yet. Please contact us before trying again.');
+          isSubmittingRef.current = false;
+          alert('We could not verify this booking yet. Please contact us before trying again. Your booking ID remains unchanged.');
         }
       } else {
         isSubmittingRef.current = false;

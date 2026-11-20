@@ -1,6 +1,7 @@
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = 5;
 const MAX_PAYLOAD_BYTES = 150_000;
+const REQUEST_TIMEOUT_MS = 8000;
 const rateLimits = new Map<string, { count: number; resetAt: number }>();
 const emailAttempts = new Map<string, { accepted: boolean; messageId?: string; expiresAt: number }>();
 const validateBrevoRequest = (req: any) => {
@@ -25,6 +26,17 @@ const getEmailAttempt = (key: string) => {
   return attempt;
 };
 const rememberEmailAttempt = (key: string, accepted: boolean, messageId?: string) => emailAttempts.set(key, { accepted, messageId, expiresAt: Date.now() + WINDOW_MS });
+const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number) => {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error('Request timed out')), timeoutMs);
+  });
+  try {
+    return await Promise.race([promise, timeout]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+};
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
@@ -40,9 +52,11 @@ export default async function handler(req: any, res: any) {
 
   const apiKey = process.env.BREVO_API_KEY;
   const emailContent = req.body?.emailContent;
+  const bookingDetails = req.body?.bookingDetails;
   const bookingId = typeof req.body?.bookingId === 'string' ? req.body.bookingId : '';
+  const scriptUrl = process.env.GOOGLE_SCRIPT_URL || process.env.VITE_GOOGLE_SCRIPT_URL;
 
-  if (!apiKey || !validateEmailContent(emailContent) || !/^.*ABANDONED LEAD:\s/.test(emailContent.subject)) {
+  if (!bookingId || bookingId.length > 100 || !scriptUrl || !validateEmailContent(emailContent) || !/^.*ABANDONED LEAD:\s/.test(emailContent.subject) || !bookingDetails || typeof bookingDetails.phone !== 'string' || !/^[6-9]\d{9}$/.test(bookingDetails.phone) || typeof bookingDetails.pickup !== 'string' || bookingDetails.pickup.length === 0 || bookingDetails.pickup.length > 500) {
     res.status(400).json({ error: 'Invalid booking email request' });
     return;
   }
@@ -55,7 +69,26 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    const sheetResponse = await withTimeout(fetch(scriptUrl, {
+      method: 'POST',
+      headers: { 'content-type': 'text/plain' },
+      body: JSON.stringify({ ...bookingDetails, bookingId, timestamp: new Date().toISOString() }),
+    }), REQUEST_TIMEOUT_MS);
+    const sheetText = await sheetResponse.text();
+    let sheetBody: any = {};
+    try { sheetBody = sheetText ? JSON.parse(sheetText) : {}; } catch { /* Existing Apps Script deployments may return plain text. */ }
+    if (!sheetResponse.ok || sheetBody?.success === false || sheetBody?.ok === false || sheetBody?.error) {
+      res.status(502).json({ error: 'Booking could not be recorded', bookingId, uncertain: !sheetResponse.ok });
+      return;
+    }
+
+    if (!apiKey) {
+      console.error('BREVO_API_KEY is not configured for abandoned booking notification', { bookingId });
+      res.status(201).json({ ok: true, bookingId, persisted: true, emailAccepted: false });
+      return;
+    }
+
+    const response = await withTimeout(fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
         accept: 'application/json',
@@ -63,7 +96,7 @@ export default async function handler(req: any, res: any) {
         'content-type': 'application/json',
       },
       body: JSON.stringify(emailContent),
-    });
+    }), REQUEST_TIMEOUT_MS);
 
     const responseBody = await response.json().catch(() => ({}));
     if (!response.ok) {
@@ -81,12 +114,12 @@ export default async function handler(req: any, res: any) {
     console.info('Brevo accepted booking email', {
       messageId: responseBody?.messageId,
     });
-    res.status(200).json({ ok: true, messageId: responseBody?.messageId });
+    res.status(201).json({ ok: true, bookingId, persisted: true, emailAccepted: true, emailMessageId: responseBody?.messageId });
   } catch (error) {
     rememberEmailAttempt(attemptKey, false);
-    console.error('Brevo booking email request failed', {
+    console.error('Abandoned booking persistence or email request failed', {
       error: error instanceof Error ? error.name : 'UnknownError',
     });
-    res.status(502).json({ error: 'Booking email service unavailable' });
+    res.status(502).json({ error: 'Booking notification service unavailable', bookingId, uncertain: true });
   }
 }
