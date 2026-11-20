@@ -239,13 +239,13 @@ Need assistance? Call us anytime.
           <td width="50%" valign="top" style="width: 50%; padding: 0 5px 0 0;">
             <a href="${waLink}" target="_blank"
               style="display: block; box-sizing: border-box; width: 100%; min-height: 48px; padding: 14px 8px; background-color: #25D366; color: #ffffff; text-align: center; text-decoration: none; border-radius: 8px; font-family: Arial, sans-serif; font-size: 14px; line-height: 20px; font-weight: bold;">
-              WhatsApp Reply
+              WhatsApp
             </a>
           </td>
           <td width="50%" valign="top" style="width: 50%; padding: 0 0 0 5px;">
             <a href="${tgLink}" target="_blank"
               style="display: block; box-sizing: border-box; width: 100%; min-height: 48px; padding: 14px 8px; background-color: #0088cc; color: #ffffff; text-align: center; text-decoration: none; border-radius: 8px; font-family: Arial, sans-serif; font-size: 14px; line-height: 20px; font-weight: bold;">
-              Telegram Reply
+              Telegram
             </a>
           </td>
         </tr>
